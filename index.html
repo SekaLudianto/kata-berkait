@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kata Berkait LIVE</title>
+
+    <!-- 1. Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. Lucide Icons --><script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- 3. Socket.IO Client --><script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+    
+    <!-- 4. Confetti (untuk saat menang) --><script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- 5. Google Font (Poppins) --><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- 6. Custom Styles --><style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            overscroll-behavior: none;
+            /* Tema biru seperti di gambar */
+            background: linear-gradient(135deg, #0052D4, #4364F7, #6FB1FC);
+        }
+        
+        /* Animasi "pop" untuk kata baru */
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in {
+            animation: pop 0.4s ease-out;
+        }
+
+        /* Animasi "shake" untuk input salah */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Custom shadow untuk slot kata */
+        .word-slot-shadow {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Gaya untuk slot aktif (menebak) */
+        .slot-active {
+            background-color: #FBBF24; /* bg-amber-400 */
+            border-color: #F59E0B; /* border-amber-500 */
+            color: #78350F; /* text-amber-900 */
+        }
+        .slot-active-box {
+            background-color: #FEF3C7; /* bg-amber-100 */
+            border-color: #FCD34D; /* border-amber-300 */
+        }
+        
+        /* Gaya untuk slot terkunci */
+        .slot-locked {
+            background-color: #6B7280; /* bg-gray-500 */
+            color: #D1D5DB; /* text-gray-300 */
+            opacity: 0.8;
+        }
+        .slot-locked-box {
+            background-color: #9CA3AF; /* bg-gray-400 */
+            border-color: #6B7280; /* border-gray-500 */
+        }
+
+        /* == TAMBAHAN: Gaya Toast == */
+        @keyframes toast-in {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toast-out {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .toast {
+            animation: toast-in 0.5s ease-out forwards;
+        }
+        
+        .toast-out {
+            animation: toast-out 0.5s ease-in forwards;
+        }
+        /* == Akhir Tambahan == */
+
+        /* == TAMBAHAN: Sembunyikan Scrollbar == */
+        #word-list-container {
+            /* Firefox */
+            scrollbar-width: none;
+            /* IE dan Edge (versi lama) */
+            -ms-overflow-style: none;
+        }
+        #word-list-container::-webkit-scrollbar {
+            /* Chrome, Safari, dan Edge (berbasis Chromium) */
+            display: none;
+        }
+        /* == Akhir Tambahan == */
+    </style>
+</head>
+
+<body class="text-slate-900">
+
+    <!-- ============================================= --><!--     LAYAR HOME (KONEKSI)                      --><!-- ============================================= --><div id="home-screen" class="w-full min-h-screen p-6 flex items-center justify-center">
+        <main class="max-w-md w-full mx-auto space-y-6 bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/30">
+            <header class="text-center">
+                <h1 class="text-4xl font-bold text-blue-800 mb-2">Kata Berkait</h1>
+                <p class="text-lg text-slate-700">Lengkapi rantai kata yang hilang!</p>
+            </header>
+
+            <!-- Koneksi TikTok --><section>
+                <h2 class="text-xl font-semibold text-slate-800 mb-4 text-center">Hubungkan ke TikTok LIVE</h2>
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                    <input type="text" id="tiktok-username" placeholder="@username" class="flex-grow w-full bg-slate-100 text-slate-900 placeholder-slate-400 border-2 border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 outline-none">
+                    <button data-action="connect-tiktok" id="connect-button" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Hubungkan
+                    </button>
+                </div>
+                <div id="tiktok-status" class="text-center text-sm text-slate-600 mt-3 h-5">Belum terhubung.</div>
+            </section>
+
+            <!-- Tombol Mulai --><section>
+                <button data-action="start-game" id="start-game-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-slate-400 disabled:cursor-not-allowed disabled:hover:scale-100">
+                    Mulai Permainan
+                </button>
+                <p id="game-status" class="text-center text-sm text-slate-600 mt-3 h-5"></p>
+            </section>
+
+            <!-- PENAMBAHAN: Update Soal dari JSON --><section class="border-t border-slate-300 pt-5">
+                <h2 class="text-lg font-semibold text-slate-800 mb-3 text-center">Update Soal (Opsional)</h2>
+                <div class="space-y-3">
+                    <input type="text" id="json-url-input" placeholder="Tempel URL file .json..." class="flex-grow w-full bg-slate-100 text-slate-900 placeholder-slate-400 border-2 border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 outline-none text-sm">
+                    <button data-action="update-levels" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                        Update Soal
+                    </button>
+                    <button data-action="reset-levels" class="w-full bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                        Reset Soal ke Default
+                    </button>
+                    <div id="level-update-status" class="text-center text-sm text-slate-600 mt-2 h-5"></div>
+                </div>
+            </section>
+            <!-- AKHIR PENAMBAHAN -->
+        </main>
+    </div>
+
+    <!-- ============================================= --><!--     LAYAR PUZZLE (GAME)                       --><!-- ============================================= --><div id="puzzle-screen" class="flex flex-col h-screen overflow-hidden hidden">
+        
+        <!-- Header --><header class="w-full max-w-2xl mx-auto p-4 flex justify-between items-center text-white">
+            <button data-action="go-home" class="p-2 rounded-full hover:bg-white/20 active:bg-white/30" aria-label="Kembali ke Home">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <div class="text-center">
+                <h1 id="level-title" class="text-xl font-semibold">Level 1</h1>
+                <p id="level-difficulty" class="text-sm opacity-80">Mudah</p>
+            </div>
+            <button data-action="reset-game" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-red-600 text-white hover:bg-red-700">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <span class="font-medium text-sm">Reset</span>
+            </button>
+        </header>
+
+        <!-- Mode Simulasi --><div id="simulation-mode-container" class="w-full max-w-2xl mx-auto px-4 pt-0 pb-2 hidden">
+            <div class="flex items-center gap-2 p-3 bg-white/20 backdrop-blur-sm rounded-lg shadow-sm border border-white/30">
+                <input type="text" id="sim-comment" placeholder="Simulasi komen (misal: GORENG)" class="flex-grow bg-slate-100 text-slate-900 text-sm rounded-md px-3 py-2 border border-slate-300 focus:ring-2 focus:ring-blue-300 outline-none">
+                <button data-action="sim-send" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-md text-sm">
+                    Kirim
+                </button>
+            </div>
+            <!-- Notifikasi Error (SEKARANG TIDAK DIPAKAI, DIGANTI TOAST) --><p id="error-message" class="text-red-300 bg-red-900/50 p-2 rounded-md text-center font-semibold h-10 mt-2 flex items-center justify-center hidden"></p>
+        </div>
+
+        <!-- Konten Game: Daftar Kata --><main class="flex-1 w-full max-w-2xl mx-auto px-4 pb-4 overflow-hidden flex flex-col items-center">
+            <div id="word-list-container" class="w-full max-w-md space-y-2 overflow-y-auto pr-2 py-4">
+                <!-- Slot kata di-generate oleh JS --></div>
+        </main>
+    </div>
+    
+    <!-- ============================================= --><!--     MODAL MENANG                              --><!-- ============================================= --><div id="win-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
+            <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="check" class="w-10 h-10 text-white"></i>
+            </div>
+            <!-- PERUBAHAN: Teks modal disederhanakan --><h2 class="text-2xl font-bold text-slate-900 mb-3">LEVEL SELESAI!</h2>
+            <p class="text-base text-slate-700 mb-5">Anda berhasil melengkapi semua kata!</p>
+            
+            <!-- PENAMBAHAN: Papan Peringkat -->
+            <div class="my-6">
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Papan Peringkat</h3>
+                <div id="leaderboard-container" class="max-h-60 overflow-y-auto space-y-2 text-left bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <!-- Peringkat akan dimuat di sini oleh JS -->
+                    <p class="text-center text-slate-500">Memuat peringkat...</p>
+                </div>
+            </div>
+            <!-- AKHIR PENAMBAHAN -->
+
+            <div id="next-level-prompt">
+                <p class="text-base text-slate-800 font-semibold animate-pulse">
+                    Ketik <code class="bg-slate-200 text-red-600 px-2 py-1 rounded-md">!next</code> di chat untuk lanjut!
+                </p>
+            </div>
+            <div id="all-complete-prompt" class="hidden">
+                <p class="text-lg text-green-700 font-semibold mb-4">
+                    Anda telah menyelesaikan semua level!
+                </p>
+                <button data-action="go-home" class="w-full px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200 transition-colors">
+                    Kembali ke Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= --><!--     TAMBAHAN: TOAST CONTAINER                 --><!-- ============================================= --><div id="toast-container" class="fixed top-24 left-4 w-auto max-w-xs z-50 space-y-3">
+        <!-- Toast akan muncul di sini --></div>
+
+
+    <!-- ============================================= --><!--     SCRIPT UTAMA                              --><!-- ============================================= --><!-- PERUBAHAN: Menghapus type="module" untuk memperbaiki error 'io not defined' --><script>
+        // --- Kelas TikTokIOConnection ---
+        class TikTokIOConnection {
+            constructor(backendUrl) {
+                this.socket = io(backendUrl);
+                this.uniqueId = null;
+                this.options = null;
+                // Simpan referensi event handler untuk bisa di-off
+                this._chatHandler = null;
+                this._disconnectHandler = null;
+                this._streamEndHandler = null;
+                this._tiktokDisconnectedHandler = null;
+
+
+                this.socket.on('connect', () => {
+                    console.info("Socket connected!");
+                    if (this.uniqueId) {
+                        this.setUniqueId();
+                    }
+                });
+
+                this._disconnectHandler = () => {
+                    console.warn("Socket disconnected!");
+                    this.uniqueId = null; // Reset uniqueId saat disconnect
+                    // Panggil global disconnect handler jika ada
+                    if (this.onDisconnectCallback) this.onDisconnectCallback();
+                };
+                this.socket.on('disconnect', this._disconnectHandler);
+
+
+                this._streamEndHandler = () => {
+                    console.warn("LIVE has ended!");
+                    this.uniqueId = null;
+                    // Panggil global streamEnd handler jika ada
+                    if (this.onStreamEndCallback) this.onStreamEndCallback();
+                };
+                this.socket.on('streamEnd', this._streamEndHandler);
+
+
+                this._tiktokDisconnectedHandler = (errMsg) => {
+                    console.warn(errMsg);
+                    if (errMsg && errMsg.includes('LIVE has ended')) {
+                        this.uniqueId = null;
+                    }
+                    // Panggil global tiktokDisconnected handler jika ada
+                    if (this.onTikTokDisconnectedCallback) this.onTikTokDisconnectedCallback(errMsg);
+                };
+                this.socket.on('tiktokDisconnected', this._tiktokDisconnectedHandler);
+            }
+
+            connect(uniqueId, options) {
+                this.uniqueId = uniqueId.replace(/^@/, '');
+                this.options = options || {};
+                this.setUniqueId();
+
+                return new Promise((resolve, reject) => {
+                    this.socket.once('tiktokConnected', resolve);
+                    this.socket.once('tiktokDisconnected', reject);
+                    setTimeout(() => {
+                        reject('Connection Timeout');
+                    }, 15000);
+                });
+            }
+
+            setUniqueId() {
+                this.socket.emit('setUniqueId', this.uniqueId, this.options);
+            }
+
+            // PERBAIKAN: Fungsi 'on' sekarang menyimpan referensi handler
+            on(eventName, eventHandler) {
+                // Hapus handler sebelumnya jika ada untuk event ini
+                this.off(eventName); 
+
+                // Simpan handler baru
+                if (eventName === 'chat') {
+                    this._chatHandler = eventHandler;
+                    this.socket.on('chat', this._chatHandler);
+                } else if (eventName === 'disconnect') {
+                    // Handler global disconnect sudah diatur di constructor
+                    // Kita akan menggunakan callback khusus untuk ini
+                    this.onDisconnectCallback = eventHandler;
+                } else if (eventName === 'streamEnd') {
+                    // Handler global streamEnd sudah diatur di constructor
+                    this.onStreamEndCallback = eventHandler;
+                } else if (eventName === 'tiktokDisconnected') {
+                    // Handler global tiktokDisconnected sudah diatur di constructor
+                    this.onTikTokDisconnectedCallback = eventHandler;
+                } else {
+                    this.socket.on(eventName, eventHandler);
+                }
+            }
+
+            // PERBAIKAN: Fungsi 'off' untuk membersihkan event listener
+            off(eventName) {
+                if (this.socket) {
+                    if (eventName === 'chat' && this._chatHandler) {
+                        this.socket.off('chat', this._chatHandler);
+                        this._chatHandler = null;
+                    }
+                    // Untuk disconnect, streamEnd, tiktokDisconnected, kita mengelola callback internal
+                    // daripada menghapus listener utama dari socket
+                    if (eventName === 'disconnect') this.onDisconnectCallback = null;
+                    if (eventName === 'streamEnd') this.onStreamEndCallback = null;
+                    if (eventName === 'tiktokDisconnected') this.onTikTokDisconnectedCallback = null;
+                    // TODO: tambahkan event lain jika perlu
+                }
+            }
+            
+            // PERBAIKAN: Fungsi untuk membersihkan semua listener khusus
+            removeAllCustomListeners() {
+                this.off('chat');
+                this.off('disconnect');
+                this.off('streamEnd');
+                this.off('tiktokDisconnected');
+            }
+        }
+
+        // --- 1. DATA & STATE ---
+        
+        // PERUBAHAN: Data level default
+        const defaultLevelData = [
+            {
+              id: 'level_1', level: 1, difficulty: 'Mudah',
+              words: [ "MINYAK", "GORENG", "PISANG", "RAJA", "HUTAN", "BAMBU", "POHON", "KEHIDUPAN", "SOSIAL", "MEDIA" ],
+              openSlots: [0, 9],
+              clues: [ null, "6 Huruf", "6 Huruf", "4 Huruf", "5 Huruf", "5 Huruf", "5 Huruf", "8 Huruf", "6 Huruf", null ]
+            },
+            {
+              id: 'level_2', level: 2, difficulty: 'Sedang',
+              words: [ "KARTU", "NAMA", "BAIK", "HATI", "AYAM", "KAMPUNG", "HALAMAN", "RUMAH", "MAKAN", "SIANG" ],
+              openSlots: [0, 9],
+              clues: [ null, "4 Huruf", "4 Huruf", "4 Huruf", "4 Huruf", "7 Huruf", "7 Huruf", "5 Huruf", "5 Huruf", null ]
+            },
+            {
+              id: 'level_3', level: 3, difficulty: 'Sedang',
+              words: [ "KEPALA", "BATU", "API", "PANAS", "DALAM", "HATI", "IKAN", "ASIN", "LAUT", "BIRU" ],
+              openSlots: [0, 9],
+              clues: [ null, "3 Huruf", "3 Huruf", "5 Huruf", "5 Huruf", "4 Huruf", "4 Huruf", "4 Huruf", "4 Huruf", null ]
+            },
+            {
+              id: 'level_4', level: 4, difficulty: 'Sulit',
+              words: [ "MEJA", "HIJAU", "DAUN", "TELINGA", "PANAS", "BUMI", "BULAT", "TEKAD", "BAJA", "RINGAN" ],
+              openSlots: [0, 9],
+              clues: [ null, "5 Huruf", "4 Huruf", "7 Huruf", "5 Huruf", "4 Huruf", "5 Huruf", "5 Huruf", "4 Huruf", null ]
+            },
+            {
+              id: 'level_5', level: 5, difficulty: 'Sulit', // Logika 'Harian Pagi' sudah oke
+              words: [ "BUKU", "HARIAN", "PAGI", "BUTA", "WARNA", "DASAR", "HUKUM", "ACARA", "TELEVISI", "SWASTA" ],
+              openSlots: [0, 9],
+              clues: [ null, "6 Huruf", "4 Huruf", "4 Huruf", "5 Huruf", "5 Huruf", "5 Huruf", "5 Huruf", "8 Huruf", null ]
+            },
+            {
+              // PENAMBAHAN: Level 6 baru
+              id: 'level_6', level: 6, difficulty: 'Sulit',
+              words: [ "MATA", "PISAU", "TAJAM", "LIDAH", "BUAYA", "DARAT", "LAUT", "BIRU", "LANGIT", "BUMI" ],
+              openSlots: [0, 9], // Buka MATA dan BUMI
+              clues: [
+                null,
+                "5 Huruf",      // PISAU
+                "5 Huruf",      // TAJAM
+                "5 Huruf",      // LIDAH
+                "5 Huruf",      // BUAYA
+                "5 Huruf",      // DARAT
+                "4 Huruf",      // LAUT
+                "4 Huruf",      // BIRU
+                "6 Huruf",      // LANGIT
+                null
+              ]
+            }
+        ];
+        
+        // PERUBAHAN: Data level aktif, bisa diganti dari JSON
+        let levelData = []; 
+        const CUSTOM_LEVEL_DATA_KEY = 'kata-rantai-custom-levels-v1';
+        
+        const STORAGE_KEY = 'kata-rantai-save-v1';
+        
+        const correctPhrases = [
+            "Wih, Jagoan!", "Jenius!", "Mantap Betul!", "Gokil!", "Tepuk Tangan!", 
+            "Luar Biasa!", "Kerja Bagus!", "Hebat!", "Cakep!"
+        ];
+        const incorrectPhrases = [
+            "Typo ya?", "Coba Lagi!", "Belum Pas!", "Zonk!", "Waduh!",
+            "Dikit Lagi!", "Hampir...!", "Bukan itu!", "Salah Woy!"
+        ];
+        
+        let gameState = {
+            currentLevelIndex: 0,
+            isGameActive: false,
+            isLevelComplete: false,
+            revealedWords: [], // Array of {word, solver: {nickname, profilePic}} or null
+            nextSlotToGuess: -1,
+            leaderboard: {} // PENAMBAHAN: Untuk menyimpan skor { userId: { score, nickname, profilePic } }
+        };
+
+        let tiktokConnection = null;
+        let errorTimeout = null;
+
+        // --- 3. DOM SELECTORS ---
+        const homeScreen = document.getElementById('home-screen');
+        const puzzleScreen = document.getElementById('puzzle-screen');
+        
+        const startGameButton = document.getElementById('start-game-button');
+        const gameStatus = document.getElementById('game-status');
+        
+        const tiktokUsername = document.getElementById('tiktok-username');
+        const connectButton = document.getElementById('connect-button');
+        const tiktokStatus = document.getElementById('tiktok-status');
+
+        const simContainer = document.getElementById('simulation-mode-container');
+        const simCommentInput = document.getElementById('sim-comment');
+        
+        // PENAMBAHAN: Selector update level
+        const jsonUrlInput = document.getElementById('json-url-input');
+        const levelUpdateStatus = document.getElementById('level-update-status');
+
+        const levelTitle = document.getElementById('level-title');
+        const levelDifficulty = document.getElementById('level-difficulty');
+        const wordListContainer = document.getElementById('word-list-container');
+        
+        const winModal = document.getElementById('win-modal');
+        const nextLevelPrompt = document.getElementById('next-level-prompt');
+        const allCompletePrompt = document.getElementById('all-complete-prompt');
+        
+        const toastContainer = document.getElementById('toast-container');
+
+        // --- 4. FUNGSI UTAMA ---
+
+        function init() {
+            // PERUBAHAN: Muat data soal dulu, baru muat progres
+            loadLevelDataFromStorage();
+            setupGlobalListeners();
+            loadState(); 
+            updateHomeUI();
+            lucide.createIcons();
+        }
+
+        function showPage(pageName) {
+            homeScreen.classList.toggle('hidden', pageName !== 'home');
+            puzzleScreen.classList.toggle('hidden', pageName !== 'game');
+        }
+
+        function setupGlobalListeners() {
+            document.body.addEventListener('click', (e) => {
+                const target = e.target.closest('[data-action]');
+                if (!target) return;
+
+                const { action } = target.dataset;
+
+                switch (action) {
+                    case 'start-game':
+                        startOrContinueGame();
+                        break;
+                    case 'go-home':
+                        goToHome();
+                        break;
+                    case 'reset-game':
+                        if (window.confirm('Anda yakin ingin mereset level ini? Ini akan menghapus progres saat ini.')) {
+                            loadLevel(gameState.currentLevelIndex, true); // true = paksa reset
+                        }
+                        break;
+                    case 'connect-tiktok':
+                        connectToTikTok();
+                        break;
+                    case 'sim-send':
+                        if (simCommentInput) {
+                            const comment = simCommentInput.value.trim();
+                            if (comment) {
+                                // PERBAIKAN: Simulasi msg yang lebih lengkap
+                                const simulatedMsg = { 
+                                    comment: comment, 
+                                    uniqueId: 'simulator_user_id', 
+                                    nickname: 'Pemain Simulasi',
+                                    profilePictureUrl: 'https://placehold.co/40x40/0284C7/FFFFFF?text=S' // URL PFP simulasi
+                                };
+                                handleComment(simulatedMsg);
+                                simCommentInput.value = '';
+                            }
+                        }
+                        break;
+                    // PENAMBAHAN: Listener aksi update level
+                    case 'update-levels':
+                        fetchAndUpdateLevels();
+                        break;
+                    case 'reset-levels':
+                        resetLevelsToDefault();
+                        break;
+                }
+            });
+
+            if (simCommentInput) {
+                simCommentInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.querySelector('[data-action="sim-send"]').click();
+                    }
+                });
+            }
+        }
+        
+        function updateHomeUI() {
+            if (!startGameButton || !gameStatus) return;
+
+            // Pastikan levelData ada dan punya isi
+            if (!levelData || levelData.length === 0) {
+                console.error("levelData kosong!");
+                levelData = defaultLevelData; // Fallback
+            }
+
+            // Pastikan currentLevelIndex valid
+            if (gameState.currentLevelIndex >= levelData.length) {
+                gameState.currentLevelIndex = 0; // Reset ke 0 jika index di luar batas
+            }
+
+            const currentLevel = levelData[gameState.currentLevelIndex];
+            if (!currentLevel) {
+                console.error("currentLevel tidak ditemukan, me-reset ke level 0.");
+                gameState.currentLevelIndex = 0;
+                currentLevel = levelData[0];
+            }
+
+            if (gameState.isGameActive && gameState.revealedWords.some(w => w !== null)) { // Cek jika ada kata yg sudah terisi
+                startGameButton.textContent = `Lanjutkan Level ${currentLevel.level}`;
+                gameStatus.textContent = `Level ${currentLevel.level} (${currentLevel.difficulty})`;
+            } else {
+                startGameButton.textContent = 'Mulai Permainan';
+                gameStatus.textContent = `Mulai dari Level ${currentLevel.level}`;
+            }
+            startGameButton.disabled = !tiktokConnection || tiktokConnection.uniqueId === null; // Tombol disable jika tidak terhubung
+        }
+
+        function startOrContinueGame() {
+            if (!tiktokConnection || tiktokConnection.uniqueId === null) {
+                if (tiktokStatus) {
+                    tiktokStatus.textContent = 'Harap hubungkan TikTok terlebih dahulu!';
+                    tiktokStatus.classList.add('text-red-600');
+                }
+                return;
+            }
+            gameState.isGameActive = true;
+            loadLevel(gameState.currentLevelIndex); 
+        }
+
+        function loadLevel(levelIndex, forceReset = false) {
+            if (levelIndex >= levelData.length) {
+                levelIndex = 0; // Kembali ke level 1 jika selesai semua level
+            }
+            
+            gameState.currentLevelIndex = levelIndex;
+            const level = levelData[levelIndex];
+
+            if (forceReset || gameState.revealedWords.length !== level.words.length || !gameState.isGameActive) {
+                gameState.isLevelComplete = false;
+                gameState.revealedWords = new Array(level.words.length).fill(null);
+                
+                level.openSlots.forEach(index => {
+                    gameState.revealedWords[index] = {
+                        word: level.words[index],
+                        solver: { 
+                            nickname: 'Puzzle', 
+                            profilePic: 'https://placehold.co/40x40/60A5FA/FFFFFF?text=P' 
+                        } 
+                    };
+                });
+                updateNextSlotToGuess();
+            } else if (gameState.nextSlotToGuess === -1) {
+                // Jika level sudah complete tapi tidak di-force reset, pastikan isLevelComplete true
+                gameState.isLevelComplete = true;
+            }
+            
+            if (simContainer) {
+                simContainer.classList.toggle('hidden', tiktokConnection != null && tiktokConnection.uniqueId !== null);
+            }
+            if (winModal) winModal.classList.add('hidden');
+            
+            showPage('game');
+            renderGameUI();
+            saveState();
+        }
+        
+        function updateNextSlotToGuess() {
+            const nextIndex = gameState.revealedWords.indexOf(null);
+            gameState.nextSlotToGuess = nextIndex;
+            
+            if (nextIndex === -1 && gameState.isGameActive && !gameState.isLevelComplete) {
+                gameState.isLevelComplete = true;
+                showWinModal();
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+        }
+        
+        function loadNextLevel() {
+            gameState.revealedWords = []; 
+            loadLevel(gameState.currentLevelIndex + 1);
+        }
+
+        function goToHome() {
+            showPage('home');
+            updateHomeUI();
+        }
+
+        // --- Fungsi Koneksi TikTok ---
+        function connectToTikTok() {
+            if (!tiktokUsername || !tiktokStatus || !connectButton) return;
+            const uniqueId = tiktokUsername.value.trim();
+            if (!uniqueId) {
+                tiktokStatus.textContent = 'Nama pengguna tidak boleh kosong!';
+                tiktokStatus.classList.add('text-red-600');
+                return;
+            }
+            tiktokStatus.textContent = `Menghubungkan ke @${uniqueId}...`;
+            tiktokStatus.classList.remove('text-red-600', 'text-green-600'); // Bersihkan kelas warna
+            connectButton.disabled = true;
+            startGameButton.disabled = true;
+
+            // PERBAIKAN UTAMA UNTUK TOAST DOUBLE:
+            // Pastikan koneksi lama di-disconnect dan semua listener di-off secara eksplisit
+            if (tiktokConnection) {
+                console.log("Memutuskan koneksi lama...");
+                tiktokConnection.removeAllCustomListeners(); // Hapus semua listener khusus
+                tiktokConnection.socket.disconnect(); // Putuskan koneksi Socket.IO
+                tiktokConnection = null;
+            }
+            
+            const backendUrl = "https://tiktok-server-production-e573.up.railway.app";
+            tiktokConnection = new TikTokIOConnection(backendUrl);
+
+            tiktokConnection.connect(uniqueId, {}).then(state => {
+                tiktokStatus.textContent = `Terhubung ke @${uniqueId}`;
+                tiktokStatus.classList.remove('text-red-600');
+                tiktokStatus.classList.add('text-green-600');
+                startGameButton.disabled = false;
+                setupTikTokListeners();
+            }).catch(errorMessage => {
+                tiktokStatus.textContent = `Gagal terhubung: ${errorMessage}`;
+                tiktokStatus.classList.add('text-red-600');
+                connectButton.disabled = false;
+                startGameButton.disabled = true;
+                tiktokConnection = null;
+            });
+        }
+
+        function setupTikTokListeners() {
+            // Kita sudah punya mekanisme off() di class TikTokIOConnection.on()
+            // Jadi, memanggil .on() akan secara otomatis menghapus yang lama.
+            tiktokConnection.on('chat', handleComment);
+            tiktokConnection.on('disconnect', () => {
+                if (tiktokStatus) tiktokStatus.textContent = 'Koneksi terputus.';
+                if (tiktokStatus) tiktokStatus.classList.add('text-red-600');
+                if (connectButton) connectButton.disabled = false;
+                if (startGameButton) startGameButton.disabled = true;
+                tiktokConnection = null; // Pastikan null jika koneksi terputus
+                updateHomeUI(); // Update UI home setelah disconnect
+            });
+            tiktokConnection.on('streamEnd', () => {
+                if (tiktokStatus) tiktokStatus.textContent = 'Siaran LIVE telah berakhir.';
+                if (tiktokStatus) tiktokStatus.classList.add('text-red-600');
+                if (connectButton) connectButton.disabled = false;
+                if (startGameButton) startGameButton.disabled = true;
+                tiktokConnection = null; // Pastikan null jika stream berakhir
+                updateHomeUI(); // Update UI home setelah stream end
+            });
+            tiktokConnection.on('tiktokDisconnected', (errMsg) => {
+                if (tiktokStatus) tiktokStatus.textContent = `TikTok terputus: ${errMsg}`;
+                if (tiktokStatus) tiktokStatus.classList.add('text-red-600');
+                if (connectButton) connectButton.disabled = false;
+                if (startGameButton) startGameButton.disabled = true;
+                tiktokConnection = null; // Pastikan null jika tiktokDisconnected
+                updateHomeUI(); // Update UI home setelah tiktokDisconnected
+            });
+        }
+        
+        function handleComment(msg) {
+            if (!gameState.isGameActive) return;
+
+            console.log("Menerima pesan:", msg);
+
+            const comment = msg.comment.trim().toUpperCase();
+            
+            if (gameState.isLevelComplete && comment === '!NEXT') {
+                loadNextLevel();
+                return;
+            }
+
+            // Izinkan !reset dari siapa saja jika dalam simulasi, atau hanya host jika terhubung ke TikTok
+            const isHost = tiktokConnection && msg.uniqueId && tiktokUsername.value.replace(/^@/, '').toLowerCase() === msg.uniqueId.toLowerCase();
+            const isSimulator = msg.uniqueId === 'simulator_user_id';
+
+            if (comment === '!RESET' && (isHost || isSimulator)) {
+                loadLevel(gameState.currentLevelIndex, true);
+                return;
+            }
+
+            if (gameState.isLevelComplete) return;
+
+            const level = levelData[gameState.currentLevelIndex];
+            // Pastikan gameState.nextSlotToGuess valid
+            if (gameState.nextSlotToGuess === -1 || gameState.nextSlotToGuess >= level.words.length) {
+                console.warn("nextSlotToGuess tidak valid, mengabaikan komentar.");
+                return;
+            }
+
+            const correctWord = level.words[gameState.nextSlotToGuess];
+
+            if (comment === correctWord) {
+                showCorrectToast(msg);
+                
+                const solvedIndex = gameState.nextSlotToGuess;
+                
+                // PERBAIKAN: Pastikan nickname dan profilePic ada, gunakan fallback jika tidak
+                const nickname = (msg.nickname && msg.nickname.trim() !== '') ? msg.nickname : msg.uniqueId || 'Anonim';
+                const profilePic = msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)';
+            
+                // --- PENAMBAHAN: Tambah Poin ---
+                const userId = msg.uniqueId;
+                if (userId) { // Hanya tambah poin jika ada userId
+                    addScore(userId, nickname, profilePic, 10); // Beri 10 poin
+                }
+                // --- AKHIR PENAMBAHAN ---
+
+                gameState.revealedWords[solvedIndex] = {
+                    word: correctWord,
+                    solver: { nickname: nickname, profilePic: profilePic }
+                };
+
+                updateNextSlotToGuess(); 
+                saveState();
+                
+                renderSingleSlot(solvedIndex, gameState.revealedWords[solvedIndex]); 
+                if (gameState.nextSlotToGuess !== -1) {
+                    renderSingleSlot(gameState.nextSlotToGuess, null); 
+                }
+
+            } else {
+                // --- PERBAIKAN UNTUK TOAST GANDA (BENAR + SALAH) ---
+                // Cek apakah komentar yang masuk adalah kata yang SUDAH TERJAWAB.
+                // Jika ya, jangan tampilkan toast "salah". Cukup abaikan.
+                
+                // Ambil daftar kata-kata yang sudah terungkap
+                const alreadySolvedWords = gameState.revealedWords
+                    .filter(data => data !== null) // Filter slot yang masih kosong (null)
+                    .map(data => data.word); // Ambil hanya kata-katanya (MINYAK, GORENG, dll)
+
+                if (!alreadySolvedWords.includes(comment)) {
+                    // HANYA tampilkan toast salah jika komentar itu...
+                    // 1. BUKAN jawaban yang benar (sudah dicek di 'if' di atas)
+                    // 2. DAN BUKAN jawaban yang sudah terisi.
+                    showIncorrectToast(msg); // PERUBAHAN: Kirim 'msg' ke fungsi
+                }
+                // Jika 'alreadySolvedWords.includes(comment)' bernilai true,
+                // artinya pengguna mengirim "GORENG" lagi padahal sudah terjawab.
+                // Dalam kasus ini, kita tidak melakukan apa-apa (tidak ada toast).
+                // --- AKHIR PERBAIKAN ---
+            }
+        }
+
+        // --- Fungsi Logika Game & UI ---
+
+        function renderGameUI() {
+            const level = levelData[gameState.currentLevelIndex];
+
+            if (levelTitle) levelTitle.textContent = `Level ${level.level}`;
+            if (levelDifficulty) levelDifficulty.textContent = level.difficulty;
+
+            if (wordListContainer) {
+                wordListContainer.innerHTML = ''; 
+                
+                level.words.forEach((word, index) => {
+                    const revealedData = gameState.revealedWords[index];
+                    const number = index + 1;
+                    let slotHTML = '';
+
+                    if (revealedData) {
+                        const safeNickname = revealedData.solver.nickname.replace(/</g, "&lt;");
+                        slotHTML = `
+                            <div id="slot-${index}" class="flex items-center gap-3 opacity-90 pop-in">
+                                <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-white text-slate-800 font-bold text-lg">${number}</span>
+                                <div class="flex-grow bg-white p-3 rounded-lg word-slot-shadow">
+                                    <div class="flex justify-between items-center flex-wrap gap-2">
+                                        <span class="font-bold text-xl">${revealedData.word}</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs font-medium text-slate-600 truncate max-w-[100px] sm:max-w-[150px] text-right">${safeNickname}</span>
+                                            <img src="${revealedData.solver.profilePic}" alt="avatar" class="w-6 h-6 rounded-full border border-slate-300" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)';">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else if (index === gameState.nextSlotToGuess) {
+                        const clue = level.clues[index] || "Tebak!";
+                        slotHTML = `
+                            <div id="slot-${index}" class="flex items-center gap-3">
+                                <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full font-bold text-lg slot-active">${number}</span>
+                                <div class="flex-grow flex items-center justify-between p-3 rounded-lg word-slot-shadow slot-active-box">
+                                    <span class="font-bold text-xl text-amber-800 tracking-widest">_ _ _ _ _</span>
+                                    <span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">${clue}</span>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        slotHTML = `
+                            <div id="slot-${index}" class="flex items-center gap-3">
+                                <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full font-bold text-lg slot-locked">${number}</span>
+                                <div class="flex-grow p-3 rounded-lg word-slot-shadow slot-locked-box">
+                                    <span class="font-semibold text-lg text-gray-700 opacity-70">Terkunci</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    wordListContainer.innerHTML += slotHTML;
+                });
+            }
+            lucide.createIcons(); // Pastikan ikon Lucide ter-render setelah DOM diperbarui
+        }
+        
+        function renderSingleSlot(index, revealedData) {
+            const level = levelData[gameState.currentLevelIndex];
+            const number = index + 1;
+            const slotElement = document.getElementById(`slot-${index}`);
+            if (!slotElement) return;
+
+            let slotHTML = '';
+
+            if (revealedData) {
+                const safeNickname = revealedData.solver.nickname.replace(/</g, "&lt;");
+                slotElement.className = "flex items-center gap-3 opacity-90 pop-in";
+                slotHTML = `
+                    <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-white text-slate-800 font-bold text-lg">${number}</span>
+                    <div class="flex-grow bg-white p-3 rounded-lg word-slot-shadow">
+                        <div class="flex justify-between items-center flex-wrap gap-2">
+                            <span class="font-bold text-xl">${revealedData.word}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-medium text-slate-600 truncate max-w-[100px] sm:max-w-[150px] text-right">${safeNickname}</span>
+                                <img src="${revealedData.solver.profilePic}" alt="avatar" class="w-6 h-6 rounded-full border border-slate-300" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)';">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const clue = level.clues[index] || "Tebak!";
+                slotElement.className = "flex items-center gap-3 pop-in";
+                slotHTML = `
+                    <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full font-bold text-lg slot-active">${number}</span>
+                    <div class="flex-grow flex items-center justify-between p-3 rounded-lg word-slot-shadow slot-active-box">
+                        <span class="font-bold text-xl text-amber-800 tracking-widest">_ _ _ _ _</span>
+                        <span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">${clue}</span>
+                    </div>
+                `;
+            }
+            slotElement.innerHTML = slotHTML;
+
+            // --- PENAMBAHAN: Auto-scroll ---
+            if (!revealedData) {
+                // Jika slot ini baru saja di-render sebagai AKTIF...
+                // (Gunakan timeout 0 untuk memastikan DOM update selesai sebelum scroll)
+                setTimeout(() => {
+                    slotElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 0);
+            }
+            // --- AKHIR PENAMBAHAN ---
+        }
+
+        function showWinModal() {
+            if (!winModal || !nextLevelPrompt || !allCompletePrompt) return;
+            
+            // --- PENAMBAHAN: Render Papan Peringkat ---
+            renderLeaderboard();
+            // --- AKHIR PENAMBAHAN ---
+
+            if (gameState.currentLevelIndex >= levelData.length - 1) {
+                nextLevelPrompt.classList.add('hidden');
+                allCompletePrompt.classList.remove('hidden');
+            } else {
+                nextLevelPrompt.classList.remove('hidden');
+                allCompletePrompt.classList.add('hidden');
+            }
+            
+            winModal.classList.remove('hidden');
+        }
+
+        function getRandomPhrase(phraseArray) {
+            return phraseArray[Math.floor(Math.random() * phraseArray.length)];
+        }
+
+        function showCorrectToast(msg) {
+            const randomWord = getRandomPhrase(correctPhrases);
+            
+            // PERBAIKAN: Gunakan nickname dari msg, dengan fallback yang lebih baik
+            const nickname = (msg.nickname && msg.nickname.trim() !== '') ? msg.nickname : msg.uniqueId || 'Anonim';
+            const profilePic = msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)'; 
+
+            const safeNickname = nickname.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            const html = `
+                <img src="${profilePic}" alt="avatar" class="w-10 h-10 rounded-full border-2 border-white flex-shrink-0" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)';">
+                <div class="flex-grow overflow-hidden">
+                    <p class="font-bold text-white truncate">${safeNickname}</p>
+                    <p class="text-sm text-green-100">${randomWord}</p>
+                </div>
+            `;
+            
+            createToast(html, 'correct');
+        }
+
+        // --- PENAMBAHAN FUNGSI BARU ---
+        function addScore(userId, nickname, profilePic, points) {
+            if (!gameState.leaderboard[userId]) {
+                // Jika user baru, buat entri
+                gameState.leaderboard[userId] = { score: 0, nickname: nickname, profilePic: profilePic };
+            }
+            
+            // Selalu update info, siapa tahu ganti PFP atau nickname
+            gameState.leaderboard[userId].nickname = nickname;
+            gameState.leaderboard[userId].profilePic = profilePic;
+            // Tambah poin
+            gameState.leaderboard[userId].score += points;
+            console.log(`Poin ${points} ditambahkan ke ${nickname}. Total: ${gameState.leaderboard[userId].score}`);
+        }
+
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboard-container');
+            if (!container) return;
+
+            // Ambil data, ubah ke array, urutkan, dan ambil Top 10
+            const sortedPlayers = Object.values(gameState.leaderboard)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 10);
+
+            if (sortedPlayers.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-500">Belum ada yang mendapat poin.</p>';
+                return;
+            }
+
+            container.innerHTML = ''; // Kosongkan
+            sortedPlayers.forEach((player, index) => {
+                const rank = index + 1;
+                let rankDisplay;
+                if (rank === 1) rankDisplay = '🥇';
+                else if (rank === 2) rankDisplay = '🥈';
+                else if (rank === 3) rankDisplay = '🥉';
+                else rankDisplay = `<span class="font-semibold text-slate-600">${rank}</span>`;
+                
+                const safeNickname = player.nickname.replace(/</g, "&lt;");
+
+                const playerHtml = `
+                    <div class="flex items-center gap-3 p-2 bg-white rounded-md shadow-sm">
+                        <div class="flex-shrink-0 w-6 text-center">${rankDisplay}</div>
+                        <img src="${player.profilePic}" alt="avatar" class="w-8 h-8 rounded-full border border-slate-200" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?';">
+                        <div class="flex-grow overflow-hidden">
+                            <p class="font-semibold text-slate-800 truncate">${safeNickname}</p>
+                        </div>
+                        <div class="flex-shrink-0 text-right">
+                            <p class="font-bold text-blue-600">${player.score} <span class="text-sm font-normal text-slate-500">poin</span></p>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += playerHtml;
+            });
+        }
+        // --- AKHIR PENAMBAHAN FUNGSI BARU ---
+
+        function showIncorrectToast(msg) { // PERUBAHAN: Terima 'msg'
+            // --- PERBAIKAN UNTUK TOAST DUPLIKAT ---
+            // Cek apakah sudah ada toast merah di layar
+            if (toastContainer.querySelector('.toast-incorrect')) {
+                return; // Jangan tampilkan toast duplikat jika sudah ada
+            }
+            // --- AKHIR PERBAIKAN ---
+
+            const randomWord = getRandomPhrase(incorrectPhrases);
+            
+            // --- PERUBAHAN: Tambahkan info penebak ---
+            const nickname = (msg.nickname && msg.nickname.trim() !== '') ? msg.nickname : msg.uniqueId || 'Anonim';
+            const profilePic = msg.profilePictureUrl || 'https://placehold.co/40x40/EF4444/7F1D1D?text=X'; // Fallback merah
+            const safeNickname = nickname.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            // --- AKHIR PERUBAHAN ---
+
+            const simInput = document.getElementById('sim-comment');
+            if (simInput && (!tiktokConnection || tiktokConnection.uniqueId === null)) { // Hanya shake jika dalam mode simulasi
+                simInput.classList.add('shake');
+                simInput.addEventListener('animationend', () => {
+                    simInput.classList.remove('shake');
+                }, { once: true });
+            }
+
+            // --- PERUBAHAN: Update HTML untuk tampilkan PFP & Nickname ---
+            const html = `
+                <img src="${profilePic}" alt="avatar" class="w-10 h-10 rounded-full border-2 border-white flex-shrink-0" onerror="this.src='https://placehold.co/40x40/EF4444/7F1D1D?text=X';">
+                <div class="flex-grow overflow-hidden">
+                    <p class="font-bold text-white truncate">${safeNickname}</p>
+                    <p class="text-sm text-red-100">${randomWord}</p>
+                </div>
+            `;
+            // --- AKHIR PERUBAHAN ---
+            
+            createToast(html, 'incorrect');
+        }
+
+        function createToast(htmlContent, type = 'correct') {
+            if (!toastContainer) return;
+
+            const toast = document.createElement('div');
+            const bgColor = type === 'correct' ? 'bg-green-600/90' : 'bg-red-600/90';
+            
+            toast.className = `toast flex items-center gap-3 w-full p-3 rounded-lg shadow-lg backdrop-blur-sm border border-white/20 ${bgColor}`;
+            toast.innerHTML = htmlContent;
+            
+            if (type === 'incorrect') {
+                // PERBAIKAN: Tambahkan kelas untuk deteksi duplikat
+                toast.classList.add('toast-incorrect');
+            }
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('toast-out');
+                toast.addEventListener('animationend', () => {
+                    if (toast.parentNode === toastContainer) {
+                        toastContainer.removeChild(toast);
+                    }
+                }, { once: true });
+            }, 3000);
+        }
+        
+        // --- PENAMBAHAN: Fungsi Update Level & Penyimpanan ---
+        
+        function loadLevelDataFromStorage() {
+            const savedData = localStorage.getItem(CUSTOM_LEVEL_DATA_KEY);
+            if (savedData) {
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    if (validateLevelData(parsedData)) {
+                        levelData = parsedData;
+                        console.log("Memuat soal custom dari localStorage.");
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Gagal parse soal custom dari localStorage:", e);
+                    localStorage.removeItem(CUSTOM_LEVEL_DATA_KEY);
+                }
+            }
+            // Jika tidak ada data custom atau gagal, pakai default
+            levelData = defaultLevelData;
+            console.log("Memuat soal default.");
+        }
+
+        function validateLevelData(data) {
+            // Validasi sederhana: apakah ini array, tidak kosong, dan punya properti 'words' & 'clues'?
+            return Array.isArray(data) && 
+                   data.length > 0 && 
+                   data[0].words && 
+                   data[0].clues &&
+                   Array.isArray(data[0].words) &&
+                   Array.isArray(data[0].clues);
+        }
+
+        async function fetchAndUpdateLevels() {
+            const url = jsonUrlInput.value.trim();
+            if (!url) {
+                levelUpdateStatus.textContent = "URL tidak boleh kosong.";
+                levelUpdateStatus.classList.add('text-red-600');
+                return;
+            }
+
+            levelUpdateStatus.textContent = "Mengunduh soal...";
+            levelUpdateStatus.classList.remove('text-red-600', 'text-green-600');
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (validateLevelData(data)) {
+                    levelData = data;
+                    localStorage.setItem(CUSTOM_LEVEL_DATA_KEY, JSON.stringify(data));
+                    levelUpdateStatus.textContent = "Sukses! Soal diperbarui. Progres direset.";
+                    levelUpdateStatus.classList.add('text-green-600');
+                    jsonUrlInput.value = '';
+                    resetGameProgress(); // Reset progres game karena soal berubah
+                } else {
+                    throw new Error("Format JSON tidak valid.");
+                }
+
+            } catch (error) {
+                console.error("Gagal update soal:", error);
+                levelUpdateStatus.textContent = `Gagal: ${error.message}`;
+                levelUpdateStatus.classList.add('text-red-600');
+                // Jika gagal, kembali ke default (atau biarkan yang lama jika ada)
+                loadLevelDataFromStorage(); 
+            }
+        }
+
+        function resetLevelsToDefault() {
+            localStorage.removeItem(CUSTOM_LEVEL_DATA_KEY);
+            levelData = defaultLevelData;
+            levelUpdateStatus.textContent = "Soal direset ke default. Progres direset.";
+            levelUpdateStatus.classList.remove('text-red-600');
+            levelUpdateStatus.classList.add('text-green-600');
+            resetGameProgress(); // Reset progres game
+        }
+        
+        function resetGameProgress() {
+            localStorage.removeItem(STORAGE_KEY);
+            // Reset gameState ke nilai awal
+            gameState = {
+                currentLevelIndex: 0,
+                isGameActive: false,
+                isLevelComplete: false,
+                revealedWords: [],
+                nextSlotToGuess: -1,
+                leaderboard: {} // Leaderboard juga direset saat ganti soal
+            };
+            updateHomeUI();
+            console.log("Progres game direset.");
+        }
+
+        // --- Fungsi Penyimpanan ---
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+        }
+
+        function loadState() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    gameState.currentLevelIndex = parsedData.currentLevelIndex || 0;
+                    gameState.isGameActive = parsedData.isGameActive || false;
+                    gameState.isLevelComplete = parsedData.isLevelComplete || false;
+                    // Pastikan revealedWords diisi dengan objek jika sebelumnya hanya string
+                    gameState.revealedWords = parsedData.revealedWords.map(item => {
+                        if (typeof item === 'string') {
+                            // Ini mungkin dari format lama, coba rekonversi
+                            return { 
+                                word: item, 
+                                solver: { 
+                                    nickname: 'Pemain Lama', 
+                                    profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=L' 
+                                } 
+                            };
+                        }
+                        return item; // Jika sudah objek, biarkan
+                    }) || [];
+                    gameState.nextSlotToGuess = parsedData.nextSlotToGuess || -1;
+                    gameState.leaderboard = parsedData.leaderboard || {}; // PENAMBAHAN
+                } catch (e) {
+                    console.error("Gagal memuat progres:", e);
+                    localStorage.removeItem(STORAGE_KEY); // Hapus data yang korup
+                    // Reset gameState ke kondisi awal jika ada error
+                    resetGameProgress(); // Panggil fungsi reset
+                }
+            } else {
+                // Jika tidak ada data progres, pastikan gameState tetap terdefinisi
+                 resetGameProgress();
+            }
+            updateHomeUI();
+        }
+        
+        // --- Mulai Aplikasi ---
+        init();
+
+    </script>
+</body>
+</html>
