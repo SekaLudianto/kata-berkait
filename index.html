@@ -15,6 +15,9 @@
 
     <!-- 5. Google Font (Poppins) --><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- PENAMBAHAN: Font Keren (Bangers) -->
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+    
     <!-- 6. Custom Styles --><style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -101,6 +104,15 @@
             display: none;
         }
         /* == Akhir Tambahan == */
+
+        /* == PENAMBAHAN: Font Keren == */
+        .font-bangers {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 1.5px;
+            color: #FFFFFF;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        /* == Akhir Tambahan == */
     </style>
 </head>
 
@@ -134,9 +146,12 @@
             <!-- PENAMBAHAN: Update Soal dari JSON --><section class="border-t border-slate-300 pt-5">
                 <h2 class="text-lg font-semibold text-slate-800 mb-3 text-center">Update Soal (Opsional)</h2>
                 <div class="space-y-3">
-                    <input type="text" id="json-url-input" placeholder="Tempel URL file .json..." class="flex-grow w-full bg-slate-100 text-slate-900 placeholder-slate-400 border-2 border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 outline-none text-sm">
+                    <!-- DIHAPUS: Input URL JSON -->
+                    <!-- <input type="text" id="json-url-input" placeholder="Tempel URL file .json..." class="flex-grow w-full bg-slate-100 text-slate-900 placeholder-slate-400 border-2 border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 outline-none text-sm"> -->
+                    
+                    <!-- DIUBAH: Teks Tombol -->
                     <button data-action="update-levels" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                        Update Soal
+                        Update/Ambil Soal dari GitHub
                     </button>
                     <button data-action="reset-levels" class="w-full bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
                         Reset Soal ke Default
@@ -155,7 +170,10 @@
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
             <div class="text-center">
-                <h1 id="level-title" class="text-xl font-semibold">Level 1</h1>
+                <!-- PENAMBAHAN: Judul Game Keren -->
+                <h2 class="font-bangers text-3xl">Kata Berkait</h2>
+                <!-- AKHIR PENAMBAHAN -->
+                <h1 id="level-title" class="text-xl font-semibold -mt-2">Level 1</h1>
                 <p id="level-difficulty" class="text-sm opacity-80">Mudah</p>
             </div>
             <button data-action="reset-game" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-red-600 text-white hover:bg-red-700">
@@ -431,7 +449,7 @@
         const simCommentInput = document.getElementById('sim-comment');
         
         // PENAMBAHAN: Selector update level
-        const jsonUrlInput = document.getElementById('json-url-input');
+        // DIHAPUS: const jsonUrlInput = document.getElementById('json-url-input');
         const levelUpdateStatus = document.getElementById('level-update-status');
 
         const levelTitle = document.getElementById('level-title');
@@ -1075,12 +1093,15 @@
         }
 
         async function fetchAndUpdateLevels() {
-            const url = jsonUrlInput.value.trim();
-            if (!url) {
-                levelUpdateStatus.textContent = "URL tidak boleh kosong.";
-                levelUpdateStatus.classList.add('text-red-600');
-                return;
-            }
+            // DIUBAH: Hapus input, hardcode URL
+            // const url = jsonUrlInput.value.trim();
+            // if (!url) {
+            //     levelUpdateStatus.textContent = "URL tidak boleh kosong.";
+            //     levelUpdateStatus.classList.add('text-red-600');
+            //     return;
+            // }
+            const url = "https://raw.githubusercontent.com/SekaLudianto/kata-berkait/refs/heads/main/soal.json";
+            // AKHIR PERUBAHAN
 
             levelUpdateStatus.textContent = "Mengunduh soal...";
             levelUpdateStatus.classList.remove('text-red-600', 'text-green-600');
@@ -1097,7 +1118,7 @@
                     localStorage.setItem(CUSTOM_LEVEL_DATA_KEY, JSON.stringify(data));
                     levelUpdateStatus.textContent = "Sukses! Soal diperbarui. Progres direset.";
                     levelUpdateStatus.classList.add('text-green-600');
-                    jsonUrlInput.value = '';
+                    // DIHAPUS: jsonUrlInput.value = '';
                     resetGameProgress(); // Reset progres game karena soal berubah
                 } else {
                     throw new Error("Format JSON tidak valid.");
