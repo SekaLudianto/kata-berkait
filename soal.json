@@ -67,7 +67,7 @@
     "id": "level_9",
     "level": 9,
     "difficulty": "Sedang",
-    "words": ["KANTOR", "POS", "PAKET", "KIRIMAN", "EKSPEDISI", "KURIR", "ANTAR", "BARANG", "BERAT", "TIMBANGAN"],
+    "words": ["KANTOR", "POS", "PAKET", "KIRIMAN", "EKSPEDISI", "KURIR", "ANTAR", "BA RANG", "BERAT", "TIMBANGAN"],
     "openSlots": [0, 9],
     "clues": [null, "3 Huruf", "5 Huruf", "7 Huruf", "9 Huruf", "5 Huruf", "5 Huruf", "6 Huruf", "5 Huruf", null]
   },
