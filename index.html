@@ -713,7 +713,8 @@
 
             console.log("Menerima pesan:", msg);
 
-            const comment = msg.comment.trim().toUpperCase();
+            // PENAMBAHAN 1: Filter spasi ("BA RANG" -> "BARANG")
+            const comment = msg.comment.trim().toUpperCase().replace(/\s+/g, '');
             
             if (gameState.isLevelComplete && comment === '!NEXT') {
                 loadNextLevel();
@@ -728,6 +729,58 @@
                 loadLevel(gameState.currentLevelIndex, true);
                 return;
             }
+
+            // PENAMBAHAN 2: Fitur !SKIPKATA (sebagai !SKIP)
+            if (comment === '!SKIP' && (isHost || isSimulator)) {
+                if (gameState.isLevelComplete || gameState.nextSlotToGuess === -1) {
+                    // Buat toast error sistem
+                    const errHtml = `
+                        <img src="https://placehold.co/40x40/EF4444/7F1D1D?text=X" alt="avatar" class="w-10 h-10 rounded-full border-2 border-white flex-shrink-0">
+                        <div class="flex-grow overflow-hidden">
+                            <p class="font-bold text-white truncate">Sistem</p>
+                            <p class="text-sm text-red-100">Tidak ada kata untuk di-skip!</p>
+                        </div>
+                    `;
+                    createToast(errHtml, 'incorrect');
+                    return;
+                }
+                
+                // Lakukan skip
+                const skippedIndex = gameState.nextSlotToGuess;
+                const level = levelData[gameState.currentLevelIndex];
+                const correctWord = level.words[skippedIndex];
+
+                gameState.revealedWords[skippedIndex] = {
+                    word: correctWord,
+                    solver: { 
+                        nickname: 'Di-skip Host', 
+                        profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' 
+                    }
+                };
+
+                // Tampilkan toast sistem
+                const safeNickname = 'Sistem Host';
+                const profilePic = 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S';
+                const html = `
+                    <img src="${profilePic}" alt="avatar" class="w-10 h-10 rounded-full border-2 border-white flex-shrink-0" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=S';">
+                    <div class="flex-grow overflow-hidden">
+                        <p class="font-bold text-white truncate">${safeNickname}</p>
+                        <p class="text-sm text-blue-100">Kata "${correctWord}" di-skip!</p>
+                    </div>
+                `;
+                createToast(html, 'system'); // Menggunakan tipe 'system' baru
+                
+                updateNextSlotToGuess();
+                saveState();
+
+                // Render ulang slot yang di-skip dan slot baru
+                renderSingleSlot(skippedIndex, gameState.revealedWords[skippedIndex]);
+                if (gameState.nextSlotToGuess !== -1) {
+                    renderSingleSlot(gameState.nextSlotToGuess, null);
+                }
+                return;
+            }
+            // AKHIR PENAMBAHAN 2
 
             if (gameState.isLevelComplete) return;
 
@@ -1038,7 +1091,13 @@
             if (!toastContainer) return;
 
             const toast = document.createElement('div');
-            const bgColor = type === 'correct' ? 'bg-green-600/90' : 'bg-red-600/90';
+            // PENAMBAHAN: Tipe 'system' untuk notifikasi !SKIP
+            let bgColor = 'bg-green-600/90'; // default 'correct'
+            if (type === 'incorrect') {
+                bgColor = 'bg-red-600/90';
+            } else if (type === 'system') {
+                bgColor = 'bg-blue-600/90'; // Warna biru untuk sistem
+            }
             
             toast.className = `toast flex items-center gap-3 w-full p-3 rounded-lg shadow-lg backdrop-blur-sm border border-white/20 ${bgColor}`;
             toast.innerHTML = htmlContent;
