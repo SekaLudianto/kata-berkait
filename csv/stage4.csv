@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+SATE,AYAM,KAMPUNG,KUCING,PAKAN,,,,,,bg1.jpg,,Jumlah huruf: 4,,Jumlah huruf: 6,,,,,,,level1.png,Easy
+PENCET,SAKLAR,LAMPU,RUMAH,JENDELA,,,,,,bg1.jpg,,Jumlah huruf: 6,,Jumlah huruf: 5,,,,,,,level1.png,Easy
+KABEL,LISTRIK,NYETRUM,IKAN,BAKAR,KAYU,,,,,bg1.jpg,,Jumlah huruf: 7,,,Jumlah huruf: 5,,,,,,level1.png,Easy
+SOSIAL,MEDIA,TANAM,POHON,AKAR,CABUT,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 4,,,,,,level1.png,Easy
+WARNA,HIJAU,DAUN,BAMBU,KURSI,ANGKAT,ANAK,,,,bg2.jpg,,Jumlah huruf: 5,,,,Jumlah huruf: 6,,,,,level2.png,Medium
+BUS,KOTA,JAKARTA,MACET,JALAN,LAMPU,NYALA,,,,bg2.jpg,,Huruf terakhir: A,,,,Huruf terakhir: U,,,,,level2.png,Medium
+OBAT,SAKIT,GIGI,KELINCI,ANGGORA[*],KUCING,KANDANG,PINTU,,,bg2.jpg,,Huruf terakhir: T,,,,,Huruf terakhir: G,,,,level2.png,Medium
+BISNIS,JUALAN,KELILING,LAPANGAN,BOLA[*],GAWANG,ANAK,SAYANG,RASA,,bg2.jpg,,Huruf terakhir: N,,,,,,Huruf terakhir: G,,,level2.png,Medium
+BACA CLUE,WAJAN,PANCI,SPATULA,KOMPOR[*],PENJEPIT,PISAU,TELENAN,ULEKAN,BACA CLUE,bg_clue.jpg,,Peralatan memasak,Peralatan memasak,Peralatan memasak,Peralatan memasak,Peralatan memasak,Peralatan memasak,Peralatan memasak,Peralatan memasak,,level_clue.png,Hard
+BUBUR,SUMSUM,TULANG,EKOR,SAPI,KURBAN[*],DAGING,BAKAR,AYAM,BUNTUT,bg3.jpg,,Huruf terakhir: M,,,,,,,Huruf terakhir: M,,level3.png,Hard

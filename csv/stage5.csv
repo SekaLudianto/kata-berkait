@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+UANG,KERTAS,KORAN,BUNGKUS,NASI,,,,,,bg1.jpg,,Jumlah huruf: 6,,Jumlah huruf: 7,,,,,,,level1.png,Easy
+JANJI,MANIS,GULA,MERAH,BATA,,,,,,bg1.jpg,,Jumlah huruf: 5,,Jumlah huruf: 5,,,,,,,level1.png,Easy
+BULUTANGKIS,RAKET,NYAMUK,DARAH,BIRU,LANGIT,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 4,,,,,,level1.png,Easy
+PANCING,IKAN,LELE,BAKAR,SAMPAH,BUANG,,,,,bg1.jpg,,Jumlah huruf: 4,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+BACA CLUE,JARUM,BENANG,PENDEDEL[*],GUNTING,METERAN,BACA CLUE,,,,bg_clue.jpg,,Peralatan menjahit,Peralatan menjahit,Peralatan menjahit,Peralatan menjahit,Peralatan menjahit,,,,,level_clue.png,Medium
+ASAH,PISAU,ROTI,BOLU,KUKUS,NASI,BUNGKUS,,,,bg2.jpg,,Huruf terakhir: U,,,,Huruf terakhir: I,,,,,level2.png,Medium
+KURSI,RODA,MOBIL,BALAP,KARUNG,BERAS,KETAN,HITAM,,,bg2.jpg,,Huruf terakhir: A,,,,,Huruf terakhir: N,,,,level2.png,Medium
+SAKIT,KEPALA,SEKOLAH,DASAR,DANAU,BUATAN,PABRIK,SEMEN,PUTIH,,bg2.jpg,,Huruf terakhir: A,,,,,,Huruf terakhir: N,,,level2.png,Medium
+RANTAI,PUTUS,CINTA,MONYET,LOMPAT,TALI[*],TAMBANG,MINYAK,TANAH,MERAH,bg3.jpg,,Huruf terakhir: S,,,,,,,Huruf terakhir: H,,level3.png,Hard
+SEPATU,RODA,KERETA,LISTRIK,PINTAR,MEMASAK[*],PASTA,GIGI,TARING,TAJAM,bg3.jpg,,Huruf terakhir: A,,,,,,,Huruf terakhir: G,,level3.png,Hard

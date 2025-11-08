@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+PERIH,MATA,TETES,TEBU,GILING,PADI,MENGUNING,GIGI,DOKTER,JIWA,bg1.jpg,,Jumlah huruf: 4,,Jumlah huruf: 4,,,Jumlah huruf: 9,,Jumlah huruf: 6,,level1.png,Easy
+SAPU,LIDI,SATE,BUMBU,KACANG,KEDELAI,TEMPE,SAMBAL,SENDOK,TEH,bg1.jpg,,Jumlah huruf: 4,,Jumlah huruf: 5,,,Jumlah huruf: 5,,Jumlah huruf: 6,,level1.png,Easy
+AROMA,TERASI,UDANG,GALAH,LOMPAT,TALI,POCONG,HANTU,SERAM,PULAU,bg1.jpg,,Jumlah huruf: 6,,Jumlah huruf: 5,,,Jumlah huruf: 6,,Jumlah huruf: 5,,level1.png,Easy
+SEPATU,LARI,LOMBA,JUARA,PERTAMA,ANAK,GAWANG,PENJAGA,KEAMANAN,PANGAN,bg1.jpg,,Jumlah huruf: 4,,Jumlah huruf: 5,,,Jumlah huruf: 6,,Jumlah huruf: 8,,level1.png,Easy
+TERNAK,LELE,BAKAR,KAYU,MEJA,KERJA,KONTRAK,KAWIN,CINCIN,EMAS,bg2.jpg,,Huruf terakhir: E,,Huruf terakhir: U,,,Huruf terakhir: K,,Huruf terakhir: N,,level2.png,Medium
+APARTEMEN,SEWA,BAYAR,PAJAK,LAPOR,POLISI,TIDUR,SIANG,MAKAN,RUMAH,bg2.jpg,,Huruf terakhir: A,,Huruf terakhir: K,,,Huruf terakhir: R,,Huruf terakhir: N,,level2.png,Medium
+LAPANGAN,BASKET,BOLA,POMPA,SEPEDA,GUNUNG,MELETUS,BALON,TIUP,LILIN,bg2.jpg,,Huruf terakhir: T,,Huruf terakhir: A,,,Huruf terakhir: S,,Huruf terakhir: P,,level2.png,Medium
+BELALANG,SEMBAH,SUJUD,SYUKUR,NIKMAT,DUNIA,PIALA,REPLIKA,SENJATA,PERANG,bg2.jpg,,Huruf terakhir: H,,Huruf terakhir: R,,,Huruf terakhir: A,,Huruf terakhir: A,,level2.png,Medium
+BACA CLUENYA,NASI,BUBUR,KOPI,KETOPRAK[*],ROTI,TELUR,SUSU,LONTONG,BACA CLUENYA,bg_clue.jpg,,Berkaitan dg sarapan,Berkaitan dg sarapan,Berkaitan dg sarapan,Berkaitan dg sarapan,Berkaitan dg sarapan,Berkaitan dg sarapan,Berkaitan dg sarapan,Berkaitan dg sarapan,,level_clue.png,Hard
+KALKULATOR,DIGITAL,KAMERA,CCTV,REKAMAN,VIDEO,EDIT,DOKUMEN,ELEKTRONIK,PERALATAN,bg3.jpg,,Huruf terakhir: L,,,,,,,Huruf terakhir: K,,level3.png,Hard

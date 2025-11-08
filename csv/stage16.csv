@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+KAMBING,GULING,BANTAL,EMPUK,BUSA,KASUR,,,,,bg1.jpg,,Jumlah huruf: 6,,,Jumlah huruf: 4,,,,,,level1.png,Easy
+ASAP,KABUT,GUNUNG,PUNCAK,SUKSES,KAYA,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+BARANG,ANTIK,DONGKRAK,MOBIL,MEWAH,HIDUP,BIAYA,,,,bg1.jpg,,Jumlah huruf: 5,,,,Jumlah huruf: 5,,,,,level1.png,Easy
+KERTAS,BURAM,MATA,RABUN,DEKAT,JARAK,POHON,,,,bg1.jpg,,Jumlah huruf: 5,,,,Jumlah huruf: 5,,,,,level1.png,Easy
+TAJAM,PEDANG,KATANA,SUZUKI,MOTOR,JEPANG,BENDERA,TIANG,,,bg2.jpg,,Jumlah huruf: 6,,,,,Jumlah huruf: 7,,,,level2.png,Medium
+KIPAS,ANGIN,PUYUH,BURUNG,SAYAP,PESAWAT,TERBANG,LANDASAN,,,bg2.jpg,,Huruf terakhir: N,,,,,Huruf terakhir: G,,,,level2.png,Medium
+BERAS,KETAN,HITAM,SEMIR,RAMBUT,UBAN,CABUT,GIGI,SAKIT,,bg2.jpg,,Huruf terakhir: N,,,,,,Huruf terakhir: I,,,level2.png,Medium
+TABLET,OBAT,CACING,TAMBANG,TARIK,TUNAI,BAYAR,TAGIHAN,TELEPON,,bg2.jpg,,Huruf terakhir: T,,,,,,Huruf terakhir: N,,,level2.png,Medium
+BACA CLUENYA,ULTRAMILK,GREENFIELDS,MILO,OATLY[*],CIMORY,DANCOW,OVALTINE,INDOMILK,BACA CLUENYA,bg_clue.jpg,,Merek susu UHT,Merek susu UHT,Merek susu UHT,Merek susu UHT,Merek susu UHT,Merek susu UHT,Merek susu UHT,Merek susu UHT,,level_clue.png,Hard
+AKAL,BULUS,MINYAK,MENTAH,SAYUR[*],MASAK,KURSUS,MUSIK,DANGDUT,RAJA,bg3.jpg,,Huruf terakhir: S,,,,,,,Huruf terakhir: T,,level3.png,Hard

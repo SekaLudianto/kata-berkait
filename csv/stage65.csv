@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+BUNGA,KELOPAK,MATA,KANTUNG,PARKIR[*],JURU,BICARA,BANYAK,AKAL,BULUS,bg1.jpg,,,,Jumlah huruf: 7,,,Jumlah huruf: 6,,,,level1.png,Easy
+ORANG,GILA,KERJA,BAKTI,SOSIAL[*],JAMINAN,UANG,KERTAS,SURAT,KIRIM,bg1.jpg,,,,Jumlah huruf: 5,,,Jumlah huruf: 4,,,,level1.png,Easy
+BACA CLUENYA,HIDUNG,KAKI,TANGAN,TANGKIS[*],MERAK[*],KETIAK,DADA,MATA,BACA CLUENYA,bg_clue.jpg,,Diawali dg BULU,Diawali dg BULU,Diawali dg BULU,Diawali dg BULU,Diawali dg BULU,Diawali dg BULU,Diawali dg BULU,Diawali dg BULU,,level_clue.png,Hard
+HELEM,SEPEDA,BENGKEL,MOTOR,MOGOK[*],MAKAN,RUMAH,ANGKER,KUBURAN,BAND,bg1.jpg,,,,Jumlah huruf: 5,,,Jumlah huruf: 5,,,,level1.png,Easy
+JENDELA,ILMU,HITAM,PUTIH,KULIT[*],MATI,SURI,TIMUN,LALAP,SAMBAL,bg2.jpg,,,,Huruf terakhir: H,,,Huruf terakhir: I,,,,level2.png,Medium
+BACA CLUENYA,GAJAH,SINGA,GORILA,BERUANG[*],HARIMAU[*],ULAR,KOMODO,MACAN,BACA CLUENYA,bg_clue.jpg,,Binatang buas,Binatang buas,Binatang buas,Binatang buas,Binatang buas,Binatang buas,Binatang buas,Binatang buas,,level_clue.png,Medium
+RUSUH,DEMO,MAHASISWA,ASRAMA,SANTRI[*],PONDOK,PESANTREN,KILAT,KHUSUS,PASUKAN,bg2.jpg,,,,Huruf terakhir: A,,,Huruf terakhir: N,,,,level2.png,Medium
+BACA CLUENYA,PEPSODENT,COLGATE,SENSODYNE,KODOMO[*],NASA[*],ZACT,ENZIM,CIPTADENT,BACA CLUENYA,bg_clue.jpg,,Merek pasta gigi,Merek pasta gigi,Merek pasta gigi,Merek pasta gigi,Merek pasta gigi,Merek pasta gigi,Merek pasta gigi,Merek pasta gigi,,level_clue.png,Medium
+LINDUNG,HUTAN,BABI,BULU,CUKUR[*],KUMIS,KUCING,TERNAK,PAKAN,BURUNG,bg3.jpg,,Huruf terakhir: N,,,,,,,Huruf terakhir: N,,level3.png,Hard
+WARUNG,TELEPON,UMUM,KENDARAAN,BERAT[*],BADAN,USAHA,MODAL,BALIK,KAMPUNG,bg3.jpg,,Huruf terakhir: N,,,,,,,Huruf terakhir: K,,level3.png,Hard

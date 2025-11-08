@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+KOREK,KUPING,GAJAH,KANDANG,JAGO,,,,,,bg1.jpg,,Jumlah huruf: 6,,Jumlah huruf: 7,,,,,,,level1.png,Easy
+KAOS,KAKI,PALSU,UANG,PINJAM,,,,,,bg1.jpg,,Jumlah huruf: 4,,Jumlah huruf: 4,,,,,,,level1.png,Easy
+MEJA,TULIS,TANGAN,DINGIN,UDARA,ANGKATAN,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 5,,,,,,level1.png,Easy
+BUBUR,AYAM,GORENG,TEMPE,SAMBAL,SAOS,,,,,bg1.jpg,,Jumlah huruf: 4,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+DAUN,BAWANG,MERAH,DELIMA,BUAH,RUJAK,BUMBU,,,,bg2.jpg,,Jumlah huruf: 6,,,,Jumlah huruf: 5,,,,,level2.png,Medium
+KURSI,GOYANG,LIDAH,BUAYA,KULIT,DOKTER,PRAKTEK,,,,bg2.jpg,,Huruf terakhir: G,,,,Huruf terakhir: R,,,,,level2.png,Medium
+NEMU,DOMPET,KULIT,BUAYA,DARAT[*],TRANSPORTASI,JALUR,PINDAH,,,bg2.jpg,,Huruf terakhir: T,,,,,Huruf terakhir: R,,,,level2.png,Medium
+BACA CLUE,DORAEMON,GIANT,SHIZUKA,SUNEO,DEKISUGI[*],DORAMI,NOBITA,BACA CLUE,,bg_clue.jpg,,Karakter Doraemon,Karakter Doraemon,Karakter Doraemon,Karakter Doraemon,Karakter Doraemon,Karakter Doraemon,Karakter Doraemon,,,level_clue.png,Medium
+BOLA,DUNIA,ARTIS,FILM,BARAT,LAUT[*],KAPAL,JANGKAR,TARIK,TEH,bg3.jpg,,Huruf terakhir: A,,,,,,,Huruf terakhir: K,,level3.png,Hard
+PINTU,PAGAR,BESI,BAJA,RINGAN,TANGAN[*],PANJANG,RAMBUT,SISIR,ROTI,bg3.jpg,,Huruf terakhir: R,,,,,,,Huruf terakhir: R,,level3.png,Hard

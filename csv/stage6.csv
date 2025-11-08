@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+KARPET,LANTAI,RUMAH,TINGKAT,TIGA,,,,,,bg1.jpg,,Jumlah huruf: 6,,Jumlah huruf: 7,,,,,,,level1.png,Easy
+PENGGARIS,KAYU,JATI,DIRI,SENDIRI,,,,,,bg1.jpg,,Jumlah huruf: 4,,Jumlah huruf: 4,,,,,,,level1.png,Easy
+REMOT,KONTROL,PUSAT,PERHATIAN,PENUH,SESAK,,,,,bg1.jpg,,Jumlah huruf: 7,,,Jumlah huruf: 5,,,,,,level1.png,Easy
+GARIS,LENGKUNG,BUMI,BULAT,BUNDAR,TOPI,,,,,bg1.jpg,,Jumlah huruf: 8,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+JARUM,JAHIT,KARUNG,BERAS,WANGI,PARFUM,MAHAL,,,,bg2.jpg,,Jumlah huruf: 5,,,,Jumlah huruf: 6,,,,,level2.png,Medium
+PECAH,TELUR,BEBEK,PANGGANG,IKAN,CUPANG,ADUAN,,,,bg2.jpg,,Huruf terakhir: R,,,,Huruf terakhir: G,,,,,level2.png,Medium
+TELUR,GULUNG,TIKAR,PANDAN,WANGI,BUNGA,MAWAR,BERDURI,,,bg2.jpg,,Huruf terakhir: G,,,,,Huruf terakhir: R,,,,level2.png,Medium
+HARTA,WARISAN,BUDAYA,BANGSA,ASIA,TIMUR,LAUT,MERAH,MUDA,,bg2.jpg,,Huruf terakhir: N,,,,,,Huruf terakhir: H,,,level2.png,Medium
+BACA CLUE,SUZUKI,YAMAHA,VIAR,GESITS[*],TVS,KAISAR,HONDA,KAWASAKI,BACA CLUE,bg_clue.jpg,,Merek motor,Merek motor,Merek motor,Merek motor,Merek motor,Merek motor,Merek motor,Merek motor,,level_clue.png,Hard
+KERIPIK,BELUT,SAWAH,HIJAU,LUMUT,POHON[*],MANGGA,HARUM,WANGI,PANDAN,bg3.jpg,,Huruf terakhir: T,,,,,,,Huruf terakhir: I,,level3.png,Hard

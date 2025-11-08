@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+COKELAT,BUBUK,SUSU,KOPI,FOTO,,,,,,bg1.jpg,,Jumlah huruf: 5,,Jumlah huruf: 4,,,,,,,level1.png,Easy
+KARTUN,GAMBAR,KERTAS,JEPIT,SANDAL,,,,,,bg1.jpg,,Jumlah huruf: 6,,Jumlah huruf: 5,,,,,,,level1.png,Easy
+KUNYIT,KUNING,EMAS,GIGI,RODA,KUNCI,,,,,bg1.jpg,,Jumlah huruf: 6,,,Jumlah huruf: 4,,,,,,level1.png,Easy
+PALSU,GIGI,KARANG,BATU,UKIR,PENSIL,,,,,bg1.jpg,,Jumlah huruf: 4,,,Jumlah huruf: 4,,,,,,level1.png,Easy
+BENDERA,TIANG,TANCAP,LAYAR,KAPAL,LONCENG,MENARA,,,,bg2.jpg,,Jumlah huruf: 5,,,,Jumlah huruf: 7,,,,,level2.png,Medium
+ANTENA,PARABOLA,SATELIT,MILITER,OPERASI,RUANG,HAMPA,,,,bg2.jpg,,Huruf terakhir: A,,,,Huruf terakhir: G,,,,,level2.png,Medium
+DINGIN,KERINGAT,MANDI,SABUN,BUSA,KASUR,KAPUK,POHON,,,bg2.jpg,,Huruf terakhir: T,,,,,Huruf terakhir: K,,,,level2.png,Medium
+KOTOR,KERUH,SUNGAI,BANJIR,BENCANA,RAWAN,DAERAH,KEPALA,SAKIT,,bg2.jpg,,Huruf terakhir: H,,,,,,Huruf terakhir: A,,,level2.png,Medium
+BACA CLUE,AMAZFIT,GARMIN,COROS[*],IMOO,OLIKE[*],HAYLOU[*],FITBIT,SUUNTO,BACA CLUE,bg_clue.jpg,,Merek smartwatch,Merek smartwatch,Merek smartwatch,Merek smartwatch,Merek smartwatch,Merek smartwatch,Merek smartwatch,Merek smartwatch,,level_clue.png,Hard
+SAMPAH,BAKAR,LELE,PECEL,JERUK[*],DAUN,HIJAU,WARNA,PENSIL,RAUTAN,bg3.jpg,,Huruf terakhir: R,,,,,,,Huruf terakhir: L,,level3.png,Hard

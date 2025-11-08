@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+TAMAN,BUNGA,MELATI,PUTIH,SALJU,,,,,,bg1.jpg,,Jumlah huruf: 5,,Jumlah huruf: 5,,,,,,,level1.png,Easy
+SENDOK,MAKAN,BAKSO,SAPI,PERAH,,,,,,bg1.jpg,,Jumlah huruf: 5,,Jumlah huruf: 4,,,,,,,level1.png,Easy
+CINCIN,KAWIN,KONTRAK,KERJA,LEMBUR,MALAM,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+POLISI,TIDUR,MIRING,KANAN,LAYAR,TELEVISI,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 5,,,,,,level1.png,Easy
+LEM,KARET,GELANG,EMAS,PUTIH,SUSU,MURNI,,,,bg2.jpg,,Jumlah huruf: 5,,,,Jumlah huruf: 4,,,,,level2.png,Medium
+TENIS,MEJA,KERJA,KERAS,KEPALA,BATU,KERIKIL,,,,bg2.jpg,,Huruf terakhir: A,,,,Huruf terakhir: U,,,,,level2.png,Medium
+JEPIT,BAJU,PANJANG,AKAL,SEHAT,BADAN,KEKAR,PERKASA,,,bg2.jpg,,Huruf terakhir: U,,,,,Huruf terakhir: R,,,,level2.png,Medium
+HANDPHONE,KENTANG,REBUS,KACANG,TANAH,AIR,TERJUN,PAYUNG,HUJAN,,bg2.jpg,,Huruf terakhir: G,,,,,,Huruf terakhir: G,,,level2.png,Medium
+BACA CLUE,HONDA,TOYOTA,MITSUBISHI,BYD[*],SUZUKI,HYUNDAI,WULING,DAIHATSU,BACA CLUE,bg_clue.jpg,,Merek mobil,Merek mobil,Merek mobil,Merek mobil,Merek mobil,Merek mobil,Merek mobil,Merek mobil,,level_clue.png,Hard
+TUTUP,BOTOL,PLASTIK,KRESEK,SAMPAH,MASYARAKAT[*],KOTA,WISATA,ALAM,SEMESTA,bg3.jpg,,Huruf terakhir: L,,,,,,,Huruf terakhir: M,,level3.png,Hard

@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+DIREKTUR,BANK,TABUNGAN,REKENING,KORAN,,,,,,bg1.jpg,,Jumlah huruf: 4,,Jumlah huruf: 8,,,,,,,level1.png,Easy
+KARYAWAN,KONTRAK,KERJA,PABRIK,GARMEN,,,,,,bg1.jpg,,Jumlah huruf: 7,,Jumlah huruf: 6,,,,,,,level1.png,Easy
+SELIMUT,TEBAL,KABUT,ASAP,POLUSI,UDARA,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+TUKANG,PARKIR,BAYAR,PAJAK,TAGIHAN,LISTRIK,,,,,bg1.jpg,,Jumlah huruf: 6,,,Jumlah huruf: 7,,,,,,level1.png,Easy
+KREATOR,KONTEN,VIDEO,MUSIK,ALAT,KESEHATAN,PETUGAS,,,,bg2.jpg,,Jumlah huruf: 6,,,,Jumlah huruf: 9,,,,,level2.png,Medium
+BIJI,JAMBU,MONYET,BUNTUT,PANJANG,CELANA,PERMAK,,,,bg2.jpg,,Huruf terakhir: U,,,,Huruf terakhir: A,,,,,level2.png,Medium
+RENANG,GAYA,RAMBUT,RONTOK,KERAK,NASI,CAMPUR,ES,,,bg2.jpg,,Huruf terakhir: A,,,,,Huruf terakhir: R,,,,level2.png,Medium
+KAYU,MANIS,MADU,LEBAH,RATU,KECANTIKAN,PRODUK,MAKANAN,RINGAN,,bg2.jpg,,Huruf terakhir: S,,,,,,Huruf terakhir: N,,,level2.png,Medium
+BACA CLUENYA,ULTRAMAN,IRONMAN,ANTMAN,IPMAN[*],HANOMAN[*],HEMAN,BATMAN,SPIDERMAN,BACA CLUENYA,bg_clue.jpg,,Jagoan akhiran: MAN,Jagoan akhiran: MAN,Jagoan akhiran: MAN,Jagoan akhiran: MAN,Jagoan akhiran: MAN,Jagoan akhiran: MAN,Jagoan akhiran: MAN,Jagoan akhiran: MAN,,level_clue.png,Hard
+HUJAN,LEBAT,BULU,HIDUNG,TERSUMBAT[*],SALURAN,PENCERNAAN,GANGGUAN,SINYAL,KUAT,bg3.jpg,,Huruf terakhir: T,,,,,,,Huruf terakhir: L,,level3.png,Hard

@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+ZAMAN,BATU,BATA,DINDING,JAM,,,,,,bg1.jpg,,Jumlah huruf: 4,,Jumlah huruf: 7,,,,,,,level1.png,Easy
+SANDAL,GUNUNG,MELETUS,BALON,TIUP,,,,,,bg1.jpg,,Jumlah huruf: 6,,Jumlah huruf: 5,,,,,,,level1.png,Easy
+BOTOL,BEKAS,PAKAI,BAJU,JAHIT,JARUM,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 5,,,,,,level1.png,Easy
+KANDANG,BURUNG,TERBANG,TINGGI,LOMPAT,KATAK,,,,,bg1.jpg,,Jumlah huruf: 6,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+KURIR,PAKET,INTERNET,CEPAT,JALAN,BELAJAR,FOKUS,,,,bg2.jpg,,Jumlah huruf: 5,,,,Jumlah huruf: 7,,,,,level2.png,Medium
+TELUR,AYAM,HUTAN,RIMBA,TOPI,BELI,JUAL,,,,bg2.jpg,,Huruf terakhir: M,,,,Huruf terakhir: I,,,,,level2.png,Medium
+SEPEDA,LIPAT,BAJU,SERAGAM,PRAMUKA[*],SALAM,DAUN,HIJAU,,,bg2.jpg,,Huruf terakhir: T,,,,,Huruf terakhir: N,,,,level2.png,Medium
+KOPI,HITAM,MANIS,GULA,PASIR[*],PANTAI,OMBAK,SUARA,PADUAN,,bg2.jpg,,Huruf terakhir: M,,,,,,Huruf terakhir: A,,,level2.png,Medium
+BACA CLUE,OBENG,TANG,GERINDA,DONGKRAK[*],KOMPRESOR,POMPA,KUAS,AMPLAS,BACA CLUE,bg_clue.jpg,,Alat perbengkelan,Alat perbengkelan,Alat perbengkelan,Alat perbengkelan,Alat perbengkelan,Alat perbengkelan,Alat perbengkelan,Alat perbengkelan,,level_clue.png,Hard
+GELAS,KACA,MOBIL,BEKAS,PAKAI,SEPATU[*],CUCI,SABUN,WANGI,PARFUM,bg3.jpg,,Huruf terakhir: A,,,,,,,Huruf terakhir: I,,level3.png,Hard

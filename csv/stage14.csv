@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+TUTUP,GELAS,KACA,JENDELA,ENGSEL,,,,,,bg1.jpg,,Jumlah huruf: 5,,Jumlah huruf: 7,,,,,,,level1.png,Easy
+BUKIT,TINGGI,KHAYALAN,LAMUNAN,KOSONG,,,,,,bg1.jpg,,Jumlah huruf: 6,,Jumlah huruf: 7,,,,,,,level1.png,Easy
+CABUT,SINGKONG,KERIPIK,TEMPE,KEDELAI,SUSU,,,,,bg1.jpg,,Jumlah huruf: 8,,,Jumlah huruf: 7,,,,,,level1.png,Easy
+GUNTING,RAMBUT,KETEK,DEODORAN,WANGI,HARUM,,,,,bg1.jpg,,Jumlah huruf: 6,,,Jumlah huruf: 5,,,,,,level1.png,Easy
+BATU,KESANDUNG,JATUH,BINTANG,LAPANGAN,RUMPUT,POTONG,,,,bg2.jpg,,Jumlah huruf: 9,,,,Jumlah huruf: 6,,,,,level2.png,Medium
+EMBER,BOCOR,GENTENG,RUMAH,TANGGA,ANAK,GAWANG,,,,bg2.jpg,,Huruf terakhir: R,,,,Huruf terakhir: K,,,,,level2.png,Medium
+GULING,BANTAL,SELIMUT,HANGAT,JAKET,TEBAL,KUMIS,CUKUR,,,bg2.jpg,,Huruf terakhir: L,,,,,Huruf terakhir: S,,,,level2.png,Medium
+ANGKAT,BERAT,BADAN,TINGGI,TERBANG,BURUNG,SARANG,TAWON,SENGAT,,bg2.jpg,,Huruf terakhir: T,,,,,,Huruf terakhir: N,,,level2.png,Medium
+BACA CLUENYA,KETUPAT,OPOR,PUASA,SILATURAHMI[*],TAKBIRAN,THR,SALAMAN,MUDIK,BACA CLUENYA,bg_clue.jpg,,Berkaitan lebaran,Berkaitan lebaran,Berkaitan lebaran,Berkaitan lebaran,Berkaitan lebaran,Berkaitan lebaran,Berkaitan lebaran,Berkaitan lebaran,,level_clue.png,Hard
+BIKA,AMBON,PISANG,BOLU,KUKUS[*],NASI,KUNING,WARNA,PENSIL,RAUTAN,bg3.jpg,,Huruf terakhir: N,,,,,,,Huruf terakhir: L,,level3.png,Hard

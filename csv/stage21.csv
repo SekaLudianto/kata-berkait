@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+GURITA,BISNIS,BERITA,POLITIK,UANG,DAMAI,,,,,bg1.jpg,,Jumlah huruf: 6,,,Jumlah huruf: 4,,,,,,level1.png,Easy
+KARPET,LANTAI,SENAM,HAMIL,KEMBAR,SIAM,,,,,bg1.jpg,,Jumlah huruf: 6,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+SETAN,GUNDUL,KEPALA,DINGIN,UDARA,ANGKATAN,BERSENJATA,,,,bg1.jpg,,Jumlah huruf: 6,,,,Jumlah huruf: 8,,,,,level1.png,Easy
+BUKU,GAMBAR,ANIMASI,KARTUN,FILM,DRAMA,KOREA,,,,bg1.jpg,,Jumlah huruf: 6,,,,Jumlah huruf: 5,,,,,level1.png,Easy
+KETUPAT,LEBARAN,MUDIK,KAMPUNG,WISATA,BAHARI,TEGAL,WARUNG,,,bg2.jpg,,Jumlah huruf: 7,,,,,Jumlah huruf: 5,,,,level2.png,Medium
+TANGGA,BERJALAN,TIDUR,KASUR,LIPAT,PISAU,TAJAM,ASAH,,,bg2.jpg,,Huruf terakhir: N,,,,,Huruf terakhir: M,,,,level2.png,Medium
+DINOSAURUS,PURBA,ZAMAN,KOLONIAL,BANGUNAN,GEDUNG,BIOSKOP,FILM,NONTON,,bg2.jpg,,Huruf terakhir: A,,,,,,Huruf terakhir: M,,,level2.png,Medium
+PAPAN,CATUR,KUDA,PONI,RAMBUT,KUTU,SISIR,LIPAT,MEJA,,bg2.jpg,,Huruf terakhir: R,,,,,,Huruf terakhir: T,,,level2.png,Medium
+BACA CLUENYA,SAPI,KAMBING,DOMBA,KERBAU,KELEDAI[*],UNTA,RUSA,KUDA,BACA CLUENYA,bg_clue.jpg,,Penghasil susu,Penghasil susu,Penghasil susu,Penghasil susu,Penghasil susu,Penghasil susu,Penghasil susu,Penghasil susu,,level_clue.png,Hard
+TULANG,PUNGGUNG,KAKI,TANGAN,BUAH[*],PARCEL,LEBARAN,KETUPAT,JANUR,KUNING,bg3.jpg,,Huruf terakhir: G,,,,,,,Huruf terakhir: R,,level3.png,Hard

@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+RUJAK,BEBEK,TELUR,PANGGANG,OVEN[*],PIZZA,TOPPING,MARTABAK,KETAN,HITAM,bg1.jpg,,Jumlah huruf: 5,,Jumlah huruf: 8,,,Jumlah huruf: 7,,Jumlah huruf: 5,,level1.png,Easy
+SOSIS,PANGGANG,BAKSO,URAT,NADI[*],DENYUT,JANTUNG,PISANG,AMBON,BIKA,bg1.jpg,,Jumlah huruf: 8,,Jumlah huruf: 4,,,Jumlah huruf: 7,,Jumlah huruf: 5,,level1.png,Easy
+GEMUK,PELUMAS,SINTETIS,KULIT,TELUR[*],DADAR,GULUNG,TIKAR,PIKNIK,BEKAL,bg1.jpg,,Jumlah huruf: 7,,Jumlah huruf: 5,,,Jumlah huruf: 6,,Jumlah huruf: 6,,level1.png,Easy
+KULIT,GATAL,SALEP,JERAWAT,PENCET[*],KLAKSON,KAPAL,GALANGAN,PEKERJA,SEMUT,bg1.jpg,,Jumlah huruf: 5,,Jumlah huruf: 7,,,Jumlah huruf: 5,,Jumlah huruf: 7,,level1.png,Easy
+KERTAS,ORIGAMI,KELINCI,PELET,IKAN[*],KALENG,KERUPUK,UDANG,OTAK,KECIL,bg2.jpg,,Huruf terakhir: I,,Huruf terakhir: T,,,Huruf terakhir: K,,Huruf terakhir: K,,level2.png,Medium
+RENGGINANG,KETAN,PANGGANG,DAGING,KURBAN[*],PANITIA,LOMBA,MAKAN,KERUPUK,GENDAR,bg2.jpg,,Huruf terakhir: N,,Huruf terakhir: G,,,Huruf terakhir: A,,Huruf terakhir: K,,level2.png,Medium
+BAU,LEMBING,LEMPAR,CAKRAM,MOTOR[*],KNALPOT,PANAS,GELOMBANG,SUARA,KENTUT,bg2.jpg,,Huruf terakhir: G,,Huruf terakhir: M,,,Huruf terakhir: S,,Huruf terakhir: A,,level2.png,Medium
+BUAH,KIWI,BURUNG,MERPATI,BALAP[*],KARUNG,BERAS,MERAH,CABAI,SAMBAL,bg2.jpg,,Huruf terakhir: I,,Huruf terakhir: I,,,Huruf terakhir: S,,Huruf terakhir: I,,level2.png,Medium
+BACA CLUENYA,ULAR,KECOA,CICAK,BELALANG[*],TIKUS,SINGA,HARIMAU,HIU,BACA CLUENYA,bg_clue.jpg,,Hewan yg ditakuti,Hewan yg ditakuti,Hewan yg ditakuti,Hewan yg ditakuti,Hewan yg ditakuti,Hewan yg ditakuti,Hewan yg ditakuti,Hewan yg ditakuti,,level_clue.png,Hard
+MINYAK,TAWON,HUTAN,RIMBA,TOPI[*],RAJUT[*],SELIMUT,BANTAL,GULING,KAMBING,bg3.jpg,,Huruf terakhir: N,,,,,,,Huruf terakhir: G,,level3.png,Hard

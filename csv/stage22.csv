@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+KOIN,LOGAM,MULIA,TUGAS,KANTOR,POS,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+JNE,PAKET,INTERNET,AKSES,CEPAT,TANGGAP,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 5,,,,,,level1.png,Easy
+PEKERTI,BUDI,BALAS,EMAIL,KIRIM,PESAN,RAHASIA,,,,bg1.jpg,,Jumlah huruf: 4,,,,Jumlah huruf: 5,,,,,level1.png,Easy
+TELUR,MARTABAK,GEROBAK,DORONG,PINTU,GESER,LEMARI,,,,bg1.jpg,,Jumlah huruf: 8,,,,Jumlah huruf: 5,,,,,level1.png,Easy
+SEMBAKO,WARUNG,TENDA,KEMPING,PRAMUKA,BARET,HIJAU,ZAMRUD,,,bg2.jpg,,Jumlah huruf: 6,,,,,Jumlah huruf: 5,,,,level2.png,Medium
+MINYAK,GORENG,KERUPUK,UDANG,LAUT,OMBAK,TINGGI,TIANG,,,bg2.jpg,,Huruf terakhir: G,,,,,Huruf terakhir: I,,,,level2.png,Medium
+TONG,SAMPAH,ORGANIK,SAYUR,BAYAM,KERIPIK,BELUT,MANCING,MANIA,,bg2.jpg,,Huruf terakhir: H,,,,,,Huruf terakhir: G,,,level2.png,Medium
+KOTA,KEMBANG,DESA,WARGA,RUKUN,TETANGGA,SEBELAH,IKAN,MATA,,bg2.jpg,,Huruf terakhir: G,,,,,,Huruf terakhir: N,,,level2.png,Medium
+BACA CLUENYA,SAPI,BIAWAK,BUAYA,KERBAU,KAMBING,ULAR,DOMBA,UNTA,BACA CLUENYA,bg_clue.jpg,,Penghasil kulit,Penghasil kulit,Penghasil kulit,Penghasil kulit,Penghasil kulit,Penghasil kulit,Penghasil kulit,Penghasil kulit,,level_clue.png,Hard
+MELETUS,BALON,TIUP,KASUR,EMPUK[*],SOFA,DUDUK,ANGIN,DARAT,JALUR,bg3.jpg,,Huruf terakhir: N,,,,,,,Huruf terakhir: T,,level3.png,Hard

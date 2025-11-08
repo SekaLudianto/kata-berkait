@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+SAHARA,GURUN,PADANG,MASAKAN,BUMBU,,,,,,bg1.jpg,,Jumlah huruf: 5,,Jumlah huruf: 7,,,,,,,level1.png,Easy
+RUMAH,TEMBOK,CAT,KUAS,BULU,,,,,,bg1.jpg,,Jumlah huruf: 6,,Jumlah huruf: 4,,,,,,,level1.png,Easy
+PULAS,TIDUR,BAJU,LIPAT,TENDA,WARUNG,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 5,,,,,,level1.png,Easy
+BELIA,MUDA,KELAPA,PARUT,KEJU,MARTABAK,,,,,bg1.jpg,,Jumlah huruf: 4,,,Jumlah huruf: 4,,,,,,level1.png,Easy
+GAS,TABUNG,BAYI,PIJAT,MINYAK,TAMBANG,TARIK,,,,bg2.jpg,,Jumlah huruf: 6,,,,Jumlah huruf: 7,,,,,level2.png,Medium
+HATI,IDAMAN,PACAR,PERHATIAN,PUSAT,KANTOR,GEDUNG,,,,bg2.jpg,,Huruf terakhir: N,,,,Huruf terakhir: R,,,,,level2.png,Medium
+AKI,SOAK,BATERAI,SENTER,LAMPU,TAMAN,HIBURAN,RAKYAT,,,bg2.jpg,,Huruf terakhir: K,,,,,Huruf terakhir: N,,,,level2.png,Medium
+BIRU,LAUT,AIR,TANAH,KACANG,SAYUR,PASAR,JAJAN,UANG,,bg2.jpg,,Huruf terakhir: T,,,,,,Huruf terakhir: N,,,level2.png,Medium
+BACA CLUE,SEIKO,CASIO,DIGITEC,SKMEI[*],FOSSIL,TIMEX,ALBA,CITIZEN,BACA CLUE,bg_clue.jpg,,Merek jam tangan,Merek jam tangan,Merek jam tangan,Merek jam tangan,Merek jam tangan,Merek jam tangan,Merek jam tangan,Merek jam tangan,,level_clue.png,Hard
+GARAM,ASIN,KECAP,BOTOL,PARFUM[*],WANGI,BERAS,TEPUNG,UDANG,OTAK,bg3.jpg,,Huruf terakhir: N,,,,,,,Huruf terakhir: G,,level3.png,Hard

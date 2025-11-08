@@ -1,0 +1,11 @@
+﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
+TOILET,UMUM,JALAN,GERAK,LURUS,,,,,,bg1.jpg,,Jumlah huruf: 4,,Jumlah huruf: 5,,,,,,,level1.png,Easy
+KAMAR,MANDI,KERAMAS,RAMBUT,POTONG,,,,,,bg1.jpg,,Jumlah huruf: 5,,Jumlah huruf: 6,,,,,,,level1.png,Easy
+ANGKER,KUBURAN,TANAH,CANGKUL,GAGANG,PINTU,,,,,bg1.jpg,,Jumlah huruf: 7,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+KESET,DAPUR,MINIMALIS,RUMAH,TANGGA,LIPAT,,,,,bg1.jpg,,Jumlah huruf: 5,,,Jumlah huruf: 6,,,,,,level1.png,Easy
+TELESKOP,BINTANG,FILM,BIOSKOP,TIKET,LOKET,ANTRI,,,,bg2.jpg,,Jumlah huruf: 7,,,,Jumlah huruf: 5,,,,,level2.png,Medium
+MASKER,BEDAH,PLASTIK,KANTONG,CELANA,DALAM,NEGERI,,,,bg2.jpg,,Huruf terakhir: H,,,,Huruf terakhir: M,,,,,level2.png,Medium
+DASTER,BATIK,SUTRA,ULAT,BULU,KETEK,BASAH,KUYUP,,,bg2.jpg,,Huruf terakhir: K,,,,,Huruf terakhir: H,,,,level2.png,Medium
+VITAMIN,OTAK,UDANG,TUMIS,WAJAN,GOSONG,ROTI,BAKAR,NASI,,bg2.jpg,,Huruf terakhir: K,,,,,,Huruf terakhir: R,,,level2.png,Medium
+BACA CLUE,UPIN,SUSANTI,EHSAN,REMBO[*],FIZI,JARJIT,IPIN,ISMAIL,BACA CLUE,bg_clue.jpg,,Karakter Upin Ipin,Karakter Upin Ipin,Karakter Upin Ipin,Karakter Upin Ipin,Karakter Upin Ipin,Karakter Upin Ipin,Karakter Upin Ipin,Karakter Upin Ipin,,level_clue.png,Hard
+TUKANG,BANGUNAN,BAHAN,BAKU,KATA[*],BENDA,KERAMAT,HUTAN,GUNDUL,PACUL,bg3.jpg,,Huruf terakhir: N,,,,,,,Huruf terakhir: L,,level3.png,Hard
