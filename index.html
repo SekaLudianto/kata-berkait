@@ -141,14 +141,23 @@
                 <div id="tiktok-status" class="text-sm text-slate-600 mt-2 h-5">Belum terhubung.</div>
             </section>
 
-            <!-- Tombol Mulai --><section>
+            <!-- Pemilih Level & Tombol Mulai --><section class="space-y-3">
+                <!-- Dropdown Pemilih Level -->
+                <div>
+                    <label for="level-select" class="block text-sm font-medium text-slate-700 mb-1">Pilih Level Awal:</label>
+                    <select id="level-select" class="w-full bg-slate-100 border-2 border-slate-300 text-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="0">Memuat level...</option>
+                    </select>
+                </div>
+                <!-- Akhir Dropdown -->
+
                 <button data-action="start-game" id="start-game-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all transform hover:scale-105 active:scale-95 focus:outline-none disabled:bg-slate-400 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-green-600/30">
                     MULAI GAME!
                 </button>
-                <p id="game-status" class="text-center text-sm text-slate-600 mt-3 h-5"></p>
+                <p id="game-status" class="text-center text-sm text-slate-600 mt-2 h-5"></p>
             </section>
 
-            <!-- PENAMBAHAN: Pengaturan GitHub & Soal --><section class="border-t border-slate-300 pt-5">
+            <!-- Pengaturan GitHub & Soal --><section class="border-t border-slate-300 pt-5">
                 <button data-action="toggle-settings" class="flex items-center justify-between w-full text-left text-lg font-semibold text-slate-800 mb-3 focus:outline-none">
                     <span class="flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5"></i> Pengaturan Soal</span>
                     <i data-lucide="chevron-down" id="settings-chevron" class="w-5 h-5 transition-transform"></i>
@@ -190,28 +199,39 @@
                     <div id="level-update-status" class="text-center text-sm text-slate-600 h-auto min-h-[1.25rem] break-words"></div>
                 </div>
             </section>
-            <!-- AKHIR PENAMBAHAN -->
         </main>
     </div>
 
     <!-- ============================================= --><!--     LAYAR PUZZLE (GAME)                       --><!-- ============================================= --><div id="puzzle-screen" class="flex flex-col h-screen overflow-hidden hidden">
         
-        <!-- Header --><header class="w-full max-w-2xl mx-auto p-4 flex justify-between items-center text-white">
-            <button data-action="go-home" class="p-2 rounded-full hover:bg-white/20 active:bg-white/30 transition-colors" aria-label="Kembali ke Home">
+        <!-- Header --><header class="w-full max-w-2xl mx-auto p-4 flex justify-between items-center text-white relative">
+            <!-- Tombol Home Kiri -->
+            <button data-action="go-home" class="p-2 rounded-full hover:bg-white/20 active:bg-white/30 transition-colors z-10" aria-label="Kembali ke Home">
                 <i data-lucide="arrow-left" class="w-6 h-6"></i>
             </button>
-            <div class="text-center">
+
+            <!-- Judul Tengah -->
+            <div class="text-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full pointer-events-none">
                 <h2 class="font-bangers text-3xl tracking-wider drop-shadow-md">Kata Berkait</h2>
-                <h1 id="level-title" class="text-xl font-semibold -mt-1 opacity-90">Level 1</h1>
-                <!-- <p id="level-difficulty" class="text-sm opacity-80">Mudah</p> -->
+                <div class="flex items-center justify-center gap-2">
+                    <h1 id="level-title" class="text-xl font-semibold -mt-1 opacity-90">Level 1</h1>
+                    <!-- PENAMBAHAN: Tombol Reconnect Kecil di Header -->
+                    <button id="header-reconnect-btn" data-action="manual-reconnect" class="hidden pointer-events-auto bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 animate-pulse transition-colors" title="Koneksi Terputus! Klik untuk hubungkan ulang.">
+                        <i data-lucide="wifi-off" class="w-3 h-3"></i>
+                        <span>Reconnect</span>
+                    </button>
+                    <!-- AKHIR PENAMBAHAN -->
+                </div>
             </div>
-            <button data-action="reset-game" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-red-500/80 hover:bg-red-600 text-white backdrop-blur-sm transition-colors">
+
+            <!-- Tombol Reset Kanan -->
+            <button data-action="reset-game" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-red-500/80 hover:bg-red-600 text-white backdrop-blur-sm transition-colors z-10">
                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                 <span class="font-medium text-sm">Reset</span>
             </button>
         </header>
 
-        <!-- Notifikasi Koneksi Terputus --><div id="disconnect-notification" class="w-full max-w-2xl mx-auto px-4 pb-2 hidden z-20">
+        <!-- Notifikasi Koneksi Terputus (Besar) --><div id="disconnect-notification" class="w-full max-w-2xl mx-auto px-4 pb-2 hidden z-20">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-red-600 text-white rounded-xl shadow-lg border border-red-400/50 animate-pulse">
                 <div class="flex items-center gap-3">
                     <i data-lucide="wifi-off" class="w-6 h-6 flex-shrink-0"></i>
@@ -275,113 +295,57 @@
 
 
     <!-- ============================================= --><!--     SCRIPT UTAMA                              --><!-- ============================================= --><script>
-        // --- Konfigurasi GitHub Default & Storage Key ---
         const GH_CONFIG_KEY = 'kata-rantai-gh-config-v1';
-        let githubConfig = {
-            OWNER: 'SekaLudianto', // Default owner
-            REPO: 'kata-berkait',  // Default repo
-            PATH: 'csv',           // PERUBAHAN: Default path ke folder 'csv'
-            BRANCH: 'main'
-        };
+        const LAST_USERNAME_KEY = 'kata-rantai-last-username-v1'; // Key baru untuk simpan username
 
-        // --- Kelas TikTokIOConnection (TIDAK BERUBAH) ---
+        let githubConfig = { OWNER: 'SekaLudianto', REPO: 'kata-berkait', PATH: 'csv', BRANCH: 'main' };
+
         class TikTokIOConnection {
             constructor(backendUrl) {
                 this.socket = io(backendUrl);
-                this.uniqueId = null;
-                this.options = null;
-                this._chatHandler = null;
-                this._disconnectHandler = null;
-                this._streamEndHandler = null;
-                this._tiktokDisconnectedHandler = null;
-
-                this.socket.on('connect', () => {
-                    console.info("Socket connected!");
-                    if (this.uniqueId) this.setUniqueId();
-                });
-                this._disconnectHandler = () => {
-                    console.warn("Socket disconnected!");
-                    this.uniqueId = null;
-                    if (this.onDisconnectCallback) this.onDisconnectCallback();
-                };
+                this.uniqueId = null; this.options = null; this._chatHandler = null; this._disconnectHandler = null; this._streamEndHandler = null; this._tiktokDisconnectedHandler = null;
+                this.socket.on('connect', () => { console.info("Socket connected!"); if (this.uniqueId) this.setUniqueId(); });
+                this._disconnectHandler = () => { console.warn("Socket disconnected!"); this.uniqueId = null; if (this.onDisconnectCallback) this.onDisconnectCallback(); };
                 this.socket.on('disconnect', this._disconnectHandler);
-                this._streamEndHandler = () => {
-                    console.warn("LIVE has ended!");
-                    this.uniqueId = null;
-                    if (this.onStreamEndCallback) this.onStreamEndCallback();
-                };
+                this._streamEndHandler = () => { console.warn("LIVE has ended!"); this.uniqueId = null; if (this.onStreamEndCallback) this.onStreamEndCallback(); };
                 this.socket.on('streamEnd', this._streamEndHandler);
-                this._tiktokDisconnectedHandler = (errMsg) => {
-                    console.warn(errMsg);
-                    if (errMsg && errMsg.includes('LIVE has ended')) this.uniqueId = null;
-                    if (this.onTikTokDisconnectedCallback) this.onTikTokDisconnectedCallback(errMsg);
-                };
+                this._tiktokDisconnectedHandler = (errMsg) => { console.warn(errMsg); if (errMsg && errMsg.includes('LIVE has ended')) this.uniqueId = null; if (this.onTikTokDisconnectedCallback) this.onTikTokDisconnectedCallback(errMsg); };
                 this.socket.on('tiktokDisconnected', this._tiktokDisconnectedHandler);
             }
             connect(uniqueId, options) {
-                this.uniqueId = uniqueId.replace(/^@/, '');
-                this.options = options || {};
-                this.setUniqueId();
-                return new Promise((resolve, reject) => {
-                    this.socket.once('tiktokConnected', resolve);
-                    this.socket.once('tiktokDisconnected', reject);
-                    setTimeout(() => { reject('Connection Timeout'); }, 15000);
-                });
+                this.uniqueId = uniqueId.replace(/^@/, ''); this.options = options || {}; this.setUniqueId();
+                return new Promise((resolve, reject) => { this.socket.once('tiktokConnected', resolve); this.socket.once('tiktokDisconnected', reject); setTimeout(() => { reject('Connection Timeout'); }, 15000); });
             }
-            setUniqueId() {
-                this.socket.emit('setUniqueId', this.uniqueId, this.options);
-            }
+            setUniqueId() { this.socket.emit('setUniqueId', this.uniqueId, this.options); }
             on(eventName, eventHandler) {
-                this.off(eventName); 
-                if (eventName === 'chat') {
-                    this._chatHandler = eventHandler;
-                    this.socket.on('chat', this._chatHandler);
-                } else if (eventName === 'disconnect') {
-                    this.onDisconnectCallback = eventHandler;
-                } else if (eventName === 'streamEnd') {
-                    this.onStreamEndCallback = eventHandler;
-                } else if (eventName === 'tiktokDisconnected') {
-                    this.onTikTokDisconnectedCallback = eventHandler;
-                } else {
-                    this.socket.on(eventName, eventHandler);
-                }
+                this.off(eventName);
+                if (eventName === 'chat') { this._chatHandler = eventHandler; this.socket.on('chat', this._chatHandler); }
+                else if (eventName === 'disconnect') this.onDisconnectCallback = eventHandler;
+                else if (eventName === 'streamEnd') this.onStreamEndCallback = eventHandler;
+                else if (eventName === 'tiktokDisconnected') this.onTikTokDisconnectedCallback = eventHandler;
+                else this.socket.on(eventName, eventHandler);
             }
             off(eventName) {
                 if (this.socket) {
-                    if (eventName === 'chat' && this._chatHandler) {
-                        this.socket.off('chat', this._chatHandler);
-                        this._chatHandler = null;
-                    }
+                    if (eventName === 'chat' && this._chatHandler) { this.socket.off('chat', this._chatHandler); this._chatHandler = null; }
                     if (eventName === 'disconnect') this.onDisconnectCallback = null;
                     if (eventName === 'streamEnd') this.onStreamEndCallback = null;
                     if (eventName === 'tiktokDisconnected') this.onTikTokDisconnectedCallback = null;
                 }
             }
-            removeAllCustomListeners() {
-                this.off('chat'); this.off('disconnect'); this.off('streamEnd'); this.off('tiktokDisconnected');
-            }
+            removeAllCustomListeners() { this.off('chat'); this.off('disconnect'); this.off('streamEnd'); this.off('tiktokDisconnected'); }
         }
 
-        // --- 1. DATA & STATE ---
         let levelData = []; 
         const CUSTOM_LEVEL_DATA_KEY = 'kata-rantai-custom-levels-v1';
         const STORAGE_KEY = 'kata-rantai-save-v1';
-        
         const correctPhrases = ["Wih, Jagoan!", "Jenius!", "Mantap Betul!", "Gokil!", "Tepuk Tangan!", "Luar Biasa!", "Kerja Bagus!", "Hebat!", "Cakep!"];
         const incorrectPhrases = ["Typo ya?", "Coba Lagi!", "Belum Pas!", "Zonk!", "Waduh!", "Dikit Lagi!", "Hampir...!", "Bukan itu!", "Salah Woy!"];
-        
-        let gameState = {
-            currentLevelIndex: 0, isGameActive: false, isLevelComplete: false,
-            revealedWords: [], nextSlotToGuess: -1, leaderboard: {}
-        };
-        
-        // PERUBAHAN UTAMA: Flag untuk mencegah pemanggilan menang berulang
+        let gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: {} };
         let isProcessingWin = false;
-
         let tiktokConnection = null;
         let lastConnectedUsername = null; 
 
-        // --- 3. DOM SELECTORS ---
         const homeScreen = document.getElementById('home-screen');
         const puzzleScreen = document.getElementById('puzzle-screen');
         const startGameButton = document.getElementById('start-game-button');
@@ -393,7 +357,6 @@
         const simCommentInput = document.getElementById('sim-comment');
         const levelUpdateStatus = document.getElementById('level-update-status');
         const levelTitle = document.getElementById('level-title');
-        // const levelDifficulty = document.getElementById('level-difficulty'); // Removed as requested implicitly by new design
         const wordListContainer = document.getElementById('word-list-container');
         const winModal = document.getElementById('win-modal');
         const nextLevelPrompt = document.getElementById('next-level-prompt');
@@ -402,35 +365,23 @@
         const disconnectNotification = document.getElementById('disconnect-notification');
         const disconnectReason = document.getElementById('disconnect-reason');
         const csvFileInput = document.getElementById('csv-file-input');
-        
-        // Selectors untuk Pengaturan Baru
         const settingsPanel = document.getElementById('settings-panel');
         const settingsChevron = document.getElementById('settings-chevron');
         const ghUsernameInput = document.getElementById('gh-username');
         const ghRepoInput = document.getElementById('gh-repo');
         const ghPathInput = document.getElementById('gh-path');
-
-        // --- 4. FUNGSI UTAMA ---
+        const levelSelect = document.getElementById('level-select');
+        const headerReconnectBtn = document.getElementById('header-reconnect-btn'); // PENAMBAHAN: Selector tombol baru
 
         function init() {
             setupGlobalListeners();
-            loadGitHubConfig(); // Muat konfigurasi GitHub yang tersimpan
-            
+            loadGitHubConfig();
+            loadLastUsername(); // Muat username terakhir
             const savedCustomData = localStorage.getItem(CUSTOM_LEVEL_DATA_KEY);
             if (savedCustomData) {
-                try {
-                    levelData = JSON.parse(savedCustomData);
-                    console.log("Data level termuat dari LocalStorage.");
-                } catch (e) {
-                    console.error("Gagal parse data lokal, mencoba fetch...", e);
-                    // Jangan otomatis fetch jika data lokal korup, biarkan user yang memicu update
-                    // fetchAndUpdateLevels(); 
-                }
-            } else {
-                 // Coba fetch pertama kali dengan default config jika belum ada data sama sekali
-                 fetchAndUpdateLevels(); 
-            }
-            
+                try { levelData = JSON.parse(savedCustomData); console.log("Data level termuat dari LocalStorage."); } 
+                catch (e) { console.error("Gagal parse data lokal, mencoba fetch...", e); }
+            } else { fetchAndUpdateLevels(); }
             loadState(); 
             updateHomeUI();
             lucide.createIcons();
@@ -446,188 +397,180 @@
                 const target = e.target.closest('[data-action]');
                 if (!target) return;
                 const { action } = target.dataset;
-
                 switch (action) {
                     case 'start-game': startOrContinueGame(); break;
                     case 'go-home': goToHome(); break;
                     case 'reset-game': if (window.confirm('Reset level ini? Progres akan hilang.')) loadLevel(gameState.currentLevelIndex, true); break;
                     case 'connect-tiktok': connectToTikTok(); break;
                     case 'manual-reconnect': 
-                        if (lastConnectedUsername) {
-                            if(disconnectReason) disconnectReason.textContent = `Menghubungkan ulang ke @${lastConnectedUsername}...`;
-                            connectToTikTok(lastConnectedUsername);
-                        } else { goToHome(); }
+                        // Gunakan username dari input jika ada, atau yang terakhir disimpan
+                        const userToConnect = tiktokUsername.value.trim() || lastConnectedUsername;
+                        if (userToConnect) { 
+                            if(disconnectReason) disconnectReason.textContent = `Menghubungkan ulang ke @${userToConnect}...`; 
+                            connectToTikTok(userToConnect); 
+                        } else { goToHome(); } 
                         break;
-                    case 'sim-send':
-                        if (simCommentInput && simCommentInput.value.trim()) {
-                            handleComment({ comment: simCommentInput.value.trim(), uniqueId: 'simulator_user_id', nickname: 'Pemain Simulasi', profilePictureUrl: 'https://placehold.co/40x40/0284C7/FFFFFF?text=S' });
-                            simCommentInput.value = '';
-                        }
-                        break;
+                    case 'sim-send': if (simCommentInput && simCommentInput.value.trim()) { handleComment({ comment: simCommentInput.value.trim(), uniqueId: 'simulator_user_id', nickname: 'Pemain Simulasi', profilePictureUrl: 'https://placehold.co/40x40/0284C7/FFFFFF?text=S' }); simCommentInput.value = ''; } break;
                     case 'update-levels': fetchAndUpdateLevels(); break;
                     case 'import-csv': if (csvFileInput) csvFileInput.click(); break;
-                    case 'toggle-settings':
-                        settingsPanel.classList.toggle('hidden');
-                        settingsChevron.classList.toggle('rotate-180');
-                        break;
-                    case 'save-gh-config':
-                        saveGitHubConfig();
-                        alert('Konfigurasi GitHub tersimpan!');
-                        break;
+                    case 'toggle-settings': settingsPanel.classList.toggle('hidden'); settingsChevron.classList.toggle('rotate-180'); break;
+                    case 'save-gh-config': saveGitHubConfig(); alert('Konfigurasi GitHub tersimpan!'); break;
                 }
             });
-
-            if (simCommentInput) {
-                simCommentInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') { e.preventDefault(); document.querySelector('[data-action="sim-send"]').click(); }
+            if (simCommentInput) simCommentInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.querySelector('[data-action="sim-send"]').click(); } });
+            if (csvFileInput) csvFileInput.addEventListener('change', handleCSVUpload);
+            if (levelSelect) {
+                levelSelect.addEventListener('change', (e) => {
+                    gameState.currentLevelIndex = parseInt(e.target.value, 10);
+                    if (gameState.isGameActive) { }
+                    updateHomeUI();
                 });
-            }
-
-            if (csvFileInput) {
-                csvFileInput.addEventListener('change', handleCSVUpload);
             }
         }
 
-        // --- FUNGSI PENGATURAN GITHUB ---
         function loadGitHubConfig() {
             const savedConfig = localStorage.getItem(GH_CONFIG_KEY);
-            if (savedConfig) {
-                try {
-                    const parsed = JSON.parse(savedConfig);
-                    githubConfig = { ...githubConfig, ...parsed };
-                } catch (e) { console.error("Gagal load GH config", e); }
-            }
-            // Update UI inputs
+            if (savedConfig) { try { const parsed = JSON.parse(savedConfig); githubConfig = { ...githubConfig, ...parsed }; } catch (e) { console.error("Gagal load GH config", e); } }
             if (ghUsernameInput) ghUsernameInput.value = githubConfig.OWNER;
             if (ghRepoInput) ghRepoInput.value = githubConfig.REPO;
             if (ghPathInput) ghPathInput.value = githubConfig.PATH;
         }
-
         function saveGitHubConfig() {
             githubConfig.OWNER = ghUsernameInput.value.trim() || githubConfig.OWNER;
             githubConfig.REPO = ghRepoInput.value.trim() || githubConfig.REPO;
             githubConfig.PATH = ghPathInput.value.trim();
             localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(githubConfig));
         }
-        // --- AKHIR FUNGSI PENGATURAN GITHUB ---
 
-        // --- FUNGSI BARU: Upload & Parse CSV ---
+        // FUNGSI BARU: Load & Save Username Terakhir
+        function loadLastUsername() {
+            lastConnectedUsername = localStorage.getItem(LAST_USERNAME_KEY);
+            if (lastConnectedUsername && tiktokUsername) {
+                tiktokUsername.value = lastConnectedUsername;
+            }
+        }
+        function saveLastUsername(username) {
+            lastConnectedUsername = username;
+            localStorage.setItem(LAST_USERNAME_KEY, username);
+        }
+
         function handleCSVUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-
-            levelUpdateStatus.textContent = "Membaca file CSV...";
-            levelUpdateStatus.className = "text-center text-sm text-slate-600 h-auto min-h-[1.25rem]";
-
+            levelUpdateStatus.textContent = "Membaca file CSV..."; levelUpdateStatus.className = "text-center text-sm text-slate-600 h-auto min-h-[1.25rem]";
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const csvText = e.target.result;
-                    const parsedLevels = parseCSV(csvText);
-                    
+                    const parsedLevels = parseCSV(e.target.result);
                     if (parsedLevels && parsedLevels.length > 0) {
                         levelData = parsedLevels;
-                        // PERUBAHAN: Re-number levels setelah import manual agar urut mulai dari 1
                         levelData.forEach((lvl, idx) => lvl.level = idx + 1);
-                        
                         localStorage.setItem(CUSTOM_LEVEL_DATA_KEY, JSON.stringify(levelData));
                         resetGameProgress();
-                        
-                        levelUpdateStatus.textContent = `Sukses! ${parsedLevels.length} level diimpor dari CSV.`;
-                        levelUpdateStatus.className = "text-center text-sm text-green-600 h-auto min-h-[1.25rem]";
-                    } else {
-                        throw new Error("Tidak ada data level valid yang ditemukan di CSV.");
-                    }
+                        levelUpdateStatus.textContent = `Sukses! ${parsedLevels.length} level diimpor dari CSV.`; levelUpdateStatus.className = "text-center text-sm text-green-600 h-auto min-h-[1.25rem]";
+                    } else { throw new Error("Tidak ada data level valid yang ditemukan di CSV."); }
                 } catch (error) {
                     console.error("CSV Parse Error:", error);
-                    levelUpdateStatus.textContent = `Gagal impor CSV: ${error.message}`;
-                    levelUpdateStatus.className = "text-center text-sm text-red-600 h-auto min-h-[1.25rem]";
+                    levelUpdateStatus.textContent = `Gagal impor CSV: ${error.message}`; levelUpdateStatus.className = "text-center text-sm text-red-600 h-auto min-h-[1.25rem]";
                 }
                 event.target.value = '';
             };
-            reader.onerror = () => {
-                levelUpdateStatus.textContent = "Gagal membaca file.";
-                levelUpdateStatus.className = "text-center text-sm text-red-600 h-auto min-h-[1.25rem]";
-            };
+            reader.onerror = () => { levelUpdateStatus.textContent = "Gagal membaca file."; levelUpdateStatus.className = "text-center text-sm text-red-600 h-auto min-h-[1.25rem]"; };
             reader.readAsText(file);
         }
 
-        // PERUBAHAN: parseCSV sekarang tidak mengatur 'level' secara otomatis di sini
-        // untuk memudahkan penggabungan banyak file.
         function parseCSV(csvText) {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
             const levels = [];
-            
-            // Mulai dari indeks 1 untuk melewati header
             for (let i = 1; i < lines.length; i++) {
                 const cols = lines[i].split(',');
                 if (cols.length < 10) continue; 
-
                 const words = cols.slice(0, 10).map(w => w.trim()).filter(w => w !== '');
                 if (words.length === 0) continue;
-
                 let clues = new Array(words.length).fill('');
                 for (let j = 1; j < words.length; j++) {
-                    // Offset 11 karena kolom clue mulai setelah 10 kolom kata + 1 kolom BG Image
                     const clueColIndex = 11 + j; 
                     if (cols[clueColIndex]) {
-                        const clue = cols[clueColIndex].trim();
-                        // PERBAIKAN: Hapus clue jika isinya adalah nama file gambar (bg1.jpg, dll)
-                        if (!clue.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                        let clue = cols[clueColIndex].trim();
+                        if (clue && !clue.match(/\.(jpg|jpeg|png|gif)$/i)) {
                             clues[j] = clue;
+                        } else {
+                            clues[j] = ''; 
                         }
                     }
                 }
-
                 let difficulty = 'Medium';
-                for (let k = cols.length - 1; k >= 0; k--) {
-                    if (cols[k] && cols[k].trim() !== '') {
-                        difficulty = cols[k].trim();
-                        break;
-                    }
-                }
-
-                levels.push({
-                    // Level akan di-set belakangan setelah digabung semua
-                    difficulty: difficulty,
-                    words: words,
-                    clues: clues,
-                    openSlots: [0]
-                });
+                for (let k = cols.length - 1; k >= 0; k--) { if (cols[k] && cols[k].trim() !== '') { difficulty = cols[k].trim(); break; } }
+                levels.push({ difficulty: difficulty, words: words, clues: clues, openSlots: [0] });
             }
             return levels;
         }
 
+        function populateLevelSelect() {
+            if (!levelSelect) return;
+            levelSelect.innerHTML = '';
+            if (!levelData || levelData.length === 0) {
+                levelSelect.innerHTML = '<option value="0">Tidak ada data level</option>';
+                levelSelect.disabled = true;
+                return;
+            }
+            levelData.forEach((level, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Level ${level.level} (${level.words.length} Kata) - ${level.difficulty || 'Normal'}`;
+                levelSelect.appendChild(option);
+            });
+            levelSelect.disabled = false;
+            levelSelect.value = gameState.currentLevelIndex;
+        }
+
         function updateHomeUI() {
             if (!startGameButton || !gameStatus) return;
+            populateLevelSelect(); 
+
             if (!levelData || levelData.length === 0) {
-                startGameButton.textContent = 'Data Soal Kosong';
-                startGameButton.disabled = true;
+                startGameButton.textContent = 'Data Soal Kosong'; startGameButton.disabled = true;
                 gameStatus.textContent = 'Silakan update dari GitHub atau Import CSV.';
                 return;
             }
-            if (gameState.currentLevelIndex >= levelData.length) gameState.currentLevelIndex = 0;
+            
+            if (gameState.currentLevelIndex >= levelData.length || gameState.currentLevelIndex < 0) {
+                 gameState.currentLevelIndex = 0;
+            }
+            
             let currentLevel = levelData[gameState.currentLevelIndex];
             if (!currentLevel) { gameState.currentLevelIndex = 0; currentLevel = levelData[0]; }
+
+            if (levelSelect) levelSelect.value = gameState.currentLevelIndex;
 
             if (gameState.isGameActive && gameState.revealedWords.some(w => w !== null)) {
                 startGameButton.textContent = `LANJUT LEVEL ${currentLevel.level}`;
                 gameStatus.textContent = `Sedang main: Level ${currentLevel.level}`;
+                if (levelSelect) levelSelect.disabled = true;
             } else {
                 startGameButton.textContent = 'MULAI GAME!';
                 gameStatus.textContent = `Akan mulai dari Level ${currentLevel.level}`;
+                if (levelSelect) levelSelect.disabled = false;
             }
+
             startGameButton.disabled = false;
             if (tiktokStatus.textContent.includes('Menghubungkan')) startGameButton.disabled = true;
         }
 
         function startOrContinueGame() {
             if (disconnectNotification) disconnectNotification.classList.add('hidden');
-            if (tiktokStatus && tiktokStatus.textContent === 'Harap hubungkan TikTok terlebih dahulu!') {
-                tiktokStatus.textContent = 'Belum terhubung.'; tiktokStatus.classList.remove('text-red-600');
+            if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); // Sembunyikan tombol header reconnect saat mulai
+            if (tiktokStatus && tiktokStatus.textContent === 'Harap hubungkan TikTok terlebih dahulu!') { tiktokStatus.textContent = 'Belum terhubung.'; tiktokStatus.classList.remove('text-red-600'); }
+            
+            if (levelSelect && !levelSelect.disabled) {
+                const selectedIndex = parseInt(levelSelect.value, 10);
+                if (selectedIndex !== gameState.currentLevelIndex) {
+                    gameState.currentLevelIndex = selectedIndex;
+                    gameState.isGameActive = false; 
+                }
             }
+
             gameState.isGameActive = true;
-            // PERBAIKAN: Reset flag saat mulai game
             isProcessingWin = false;
             loadLevel(gameState.currentLevelIndex); 
         }
@@ -636,78 +579,53 @@
             if (levelIndex >= levelData.length) levelIndex = 0;
             gameState.currentLevelIndex = levelIndex;
             const level = levelData[levelIndex];
-
             if (forceReset || gameState.revealedWords.length !== level.words.length || !gameState.isGameActive) {
-                gameState.isLevelComplete = false;
-                isProcessingWin = false; // Reset flag saat reset level
+                gameState.isLevelComplete = false; isProcessingWin = false;
                 gameState.revealedWords = new Array(level.words.length).fill(null);
-                const slotsToOpen = level.openSlots || [0];
-                slotsToOpen.forEach(index => {
-                    if (index < level.words.length) {
-                        gameState.revealedWords[index] = {
-                            word: level.words[index],
-                            solver: { nickname: 'AHMAD', profilePic: 'https://placehold.co/40x40/60A5FA/FFFFFF?text=棲' } 
-                        };
-                    }
-                });
+                (level.openSlots || [0]).forEach(index => { if (index < level.words.length) gameState.revealedWords[index] = { word: level.words[index], solver: { nickname: 'AHMAD', profilePic: 'https://placehold.co/40x40/60A5FA/FFFFFF?text=棲' } }; });
                 updateNextSlotToGuess();
-            } else if (gameState.nextSlotToGuess === -1) {
-                // Level sudah selesai sebelumnya, tampilkan modal jika belum
-                if (!gameState.isLevelComplete) {
-                     gameState.isLevelComplete = true;
-                     showWinModal();
-                }
-            }
-            
+            } else if (gameState.nextSlotToGuess === -1 && !gameState.isLevelComplete) { gameState.isLevelComplete = true; showWinModal(); }
             if (simContainer) simContainer.classList.toggle('hidden', tiktokConnection != null && tiktokConnection.uniqueId !== null);
             if (winModal && !gameState.isLevelComplete) winModal.classList.add('hidden');
             showPage('game'); renderGameUI(); saveState();
         }
         
         function updateNextSlotToGuess() {
-            // PERBAIKAN UTAMA: Cegah eksekusi jika sedang memproses kemenangan atau level sudah selesai dan modal tampil
             if (isProcessingWin || (gameState.isLevelComplete && winModal && !winModal.classList.contains('hidden'))) return;
-
             const nextIndex = gameState.revealedWords.indexOf(null);
             gameState.nextSlotToGuess = nextIndex;
-
             if (nextIndex === -1 && gameState.isGameActive && !gameState.isLevelComplete) {
-                isProcessingWin = true; // Kunci proses segera
-                gameState.isLevelComplete = true;
-                saveState(); 
-                showWinModal(); 
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                // Opsional: Lepas kunci setelah animasi selesai (misal 1 detik), tapi biasanya tidak perlu jika pindah level meresetnya.
+                isProcessingWin = true; gameState.isLevelComplete = true; saveState(); showWinModal(); confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                 setTimeout(() => isProcessingWin = false, 2000); 
             }
         }
         
-        function loadNextLevel() { 
-            gameState.revealedWords = []; 
-            isProcessingWin = false; // Reset flag saat pindah level
-            loadLevel(gameState.currentLevelIndex + 1); 
+        function loadNextLevel() { gameState.revealedWords = []; isProcessingWin = false; loadLevel(gameState.currentLevelIndex + 1); }
+        function goToHome() { 
+            if (disconnectNotification) disconnectNotification.classList.add('hidden'); 
+            if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden');
+            showPage('home'); updateHomeUI(); 
         }
-        function goToHome() { if (disconnectNotification) disconnectNotification.classList.add('hidden'); showPage('home'); updateHomeUI(); }
 
-        // --- Koneksi TikTok & Handler (TIDAK BERUBAH) ---
         function connectToTikTok(usernameToConnect = null) {
             if (!tiktokUsername || !tiktokStatus || !connectButton) return;
             const uniqueId = usernameToConnect ? usernameToConnect : tiktokUsername.value.trim();
             if (!uniqueId) { tiktokStatus.textContent = 'Username kosong!'; tiktokStatus.classList.add('text-red-600'); return; }
-
+            
             tiktokStatus.textContent = `Menghubungkan ke @${uniqueId}...`;
             if (disconnectNotification && !disconnectNotification.classList.contains('hidden')) disconnectReason.textContent = `Menghubungkan ke @${uniqueId}...`;
-            tiktokStatus.classList.remove('text-red-600', 'text-green-600');
-            connectButton.disabled = true; startGameButton.disabled = true;
-
-            if (tiktokConnection) { tiktokConnection.removeAllCustomListeners(); tiktokConnection.socket.disconnect(); tiktokConnection = null; }
             
+            tiktokStatus.classList.remove('text-red-600', 'text-green-600'); connectButton.disabled = true; startGameButton.disabled = true;
+            
+            if (tiktokConnection) { tiktokConnection.removeAllCustomListeners(); tiktokConnection.socket.disconnect(); tiktokConnection = null; }
             tiktokConnection = new TikTokIOConnection("https://tiktok-server-production-e573.up.railway.app");
             tiktokConnection.connect(uniqueId, {}).then(state => {
-                tiktokStatus.textContent = `Terhubung ke @${uniqueId}`;
-                tiktokStatus.classList.remove('text-red-600'); tiktokStatus.classList.add('text-green-600');
-                startGameButton.disabled = false; lastConnectedUsername = uniqueId;
-                if (disconnectNotification) disconnectNotification.classList.add('hidden');
+                tiktokStatus.textContent = `Terhubung ke @${uniqueId}`; tiktokStatus.classList.remove('text-red-600'); tiktokStatus.classList.add('text-green-600');
+                startGameButton.disabled = false; 
+                saveLastUsername(uniqueId); // Simpan username saat berhasil konek
+                
+                if (disconnectNotification) disconnectNotification.classList.add('hidden'); 
+                if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); // Sembunyikan tombol reconnect header
                 if (simContainer) simContainer.classList.add('hidden');
                 setupTikTokListeners();
             }).catch(errorMessage => {
@@ -719,13 +637,15 @@
 
         function handleDisconnect(reason) {
             if (tiktokStatus) { tiktokStatus.textContent = reason; tiktokStatus.classList.add('text-red-600'); }
-            if (connectButton) connectButton.disabled = false;
-            if (startGameButton) startGameButton.disabled = false;
+            if (connectButton) connectButton.disabled = false; if (startGameButton) startGameButton.disabled = false;
             if (tiktokConnection) { tiktokConnection.removeAllCustomListeners(); tiktokConnection.socket.disconnect(); tiktokConnection = null; }
             updateHomeUI();
-            if (gameState.isGameActive && disconnectNotification && disconnectReason) {
-                disconnectReason.textContent = reason; disconnectNotification.classList.remove('hidden'); lucide.createIcons();
-                if (simContainer) simContainer.classList.add('hidden');
+            if (gameState.isGameActive) {
+                if (disconnectReason) disconnectReason.textContent = reason; 
+                if (disconnectNotification) disconnectNotification.classList.remove('hidden'); 
+                if (headerReconnectBtn) headerReconnectBtn.classList.remove('hidden'); // Tampilkan tombol header reconnect
+                lucide.createIcons(); 
+                if (simContainer) simContainer.classList.add('hidden'); 
             }
         }
 
@@ -738,44 +658,36 @@
         
         function handleComment(msg) {
             if (!gameState.isGameActive) return;
+            // Sembunyikan notif jika pesan masuk (tanda sudah terkoneksi)
             if (disconnectNotification && !disconnectNotification.classList.contains('hidden')) disconnectNotification.classList.add('hidden');
+            if (headerReconnectBtn && !headerReconnectBtn.classList.contains('hidden')) headerReconnectBtn.classList.add('hidden');
+
             console.log("Pesan:", msg);
             const comment = msg.comment.trim().toUpperCase().replace(/\s+/g, '');
             if (gameState.isLevelComplete && comment === '!NEXT') { loadNextLevel(); return; }
-
             const isHost = tiktokConnection && msg.uniqueId && tiktokUsername.value.replace(/^@/, '').toLowerCase() === msg.uniqueId.toLowerCase();
             const isSimulator = msg.uniqueId === 'simulator_user_id';
-
             if (comment === '!RESET' && (isHost || isSimulator)) { loadLevel(gameState.currentLevelIndex, true); return; }
             if (comment === '!SKIP' && (isHost || isSimulator)) {
-                if (gameState.isLevelComplete || gameState.nextSlotToGuess === -1) {
-                    createToast(`<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-red-100">Tidak ada kata untuk di-skip!</p></div>`, 'incorrect'); return;
-                }
-                const skippedIndex = gameState.nextSlotToGuess;
-                const level = levelData[gameState.currentLevelIndex];
+                if (gameState.isLevelComplete || gameState.nextSlotToGuess === -1) { createToast(`<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-red-100">Tidak ada kata untuk di-skip!</p></div>`, 'incorrect'); return; }
+                const skippedIndex = gameState.nextSlotToGuess; const level = levelData[gameState.currentLevelIndex];
                 gameState.revealedWords[skippedIndex] = { word: level.words[skippedIndex], solver: { nickname: 'Di-skip Host', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } };
                 createToast(`<div class="flex-grow"><p class="font-bold text-white">Sistem Host</p><p class="text-sm text-blue-100">Kata "${level.words[skippedIndex]}" di-skip!</p></div>`, 'system');
-                updateNextSlotToGuess(); saveState();
-                renderSingleSlot(skippedIndex, gameState.revealedWords[skippedIndex]);
+                updateNextSlotToGuess(); saveState(); renderSingleSlot(skippedIndex, gameState.revealedWords[skippedIndex]);
                 if (gameState.nextSlotToGuess !== -1) renderSingleSlot(gameState.nextSlotToGuess, null);
                 return;
             }
-
             if (gameState.isLevelComplete) return;
             const level = levelData[gameState.currentLevelIndex];
             if (gameState.nextSlotToGuess === -1 || gameState.nextSlotToGuess >= level.words.length) return;
-
             const correctWord = level.words[gameState.nextSlotToGuess];
             if (comment === correctWord) {
-                // PERUBAHAN: Berikan poin ke showCorrectToast
-                showCorrectToast(msg, 10); 
-                const userId = msg.uniqueId;
+                showCorrectToast(msg, 10); const userId = msg.uniqueId;
                 const nickname = (msg.nickname && msg.nickname.trim() !== '') ? msg.nickname : msg.uniqueId || 'Anonim';
                 const profilePic = msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)';
                 if (userId) addScore(userId, nickname, profilePic, 10);
                 gameState.revealedWords[gameState.nextSlotToGuess] = { word: correctWord, solver: { nickname, profilePic } };
-                const solvedIndex = gameState.nextSlotToGuess;
-                updateNextSlotToGuess(); saveState();
+                const solvedIndex = gameState.nextSlotToGuess; updateNextSlotToGuess(); saveState();
                 renderSingleSlot(solvedIndex, gameState.revealedWords[solvedIndex]); 
                 if (gameState.nextSlotToGuess !== -1) renderSingleSlot(gameState.nextSlotToGuess, null); 
             } else {
@@ -784,16 +696,12 @@
             }
         }
 
-        // --- Render UI ---
         function renderGameUI() {
             const level = levelData[gameState.currentLevelIndex];
             if (levelTitle) levelTitle.textContent = `Level ${level.level}`;
-            // if (levelDifficulty) levelDifficulty.textContent = level.difficulty; // Removed from UI
             if (wordListContainer) {
                 wordListContainer.innerHTML = ''; 
-                level.words.forEach((word, index) => {
-                    renderSingleSlot(index, gameState.revealedWords[index], true); // Gunakan renderSingleSlot untuk inisialisasi juga
-                });
+                level.words.forEach((word, index) => { renderSingleSlot(index, gameState.revealedWords[index], true); });
             }
             lucide.createIcons();
         }
@@ -802,14 +710,8 @@
             const level = levelData[gameState.currentLevelIndex];
             const number = index + 1;
             let slotElement = document.getElementById(`slot-${index}`);
-            
-            if (!slotElement && isInitialRender) {
-                slotElement = document.createElement('div');
-                slotElement.id = `slot-${index}`;
-                wordListContainer.appendChild(slotElement);
-            }
+            if (!slotElement && isInitialRender) { slotElement = document.createElement('div'); slotElement.id = `slot-${index}`; wordListContainer.appendChild(slotElement); }
             if (!slotElement) return;
-
             let slotHTML = '';
             if (revealedData) {
                 const safeNickname = revealedData.solver.nickname.replace(/</g, "&lt;");
@@ -829,10 +731,8 @@
                 const firstLetter = level.words[index][0];
                 const difficulty = (level.difficulty || 'Medium').toLowerCase();
                 let clue = level.clues[index] || 'Tebak!';
-                // PERBAIKAN: Menggunakan bg-red-600 text-white untuk kontras yang lebih baik
                 let clueHTML = `<span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-sm">${clue}</span>`;
                 if (difficulty === 'sulit') clueHTML = ''; 
-
                 slotElement.className = "flex items-center gap-3 pop-in scale-105 transition-transform";
                 slotHTML = `
                     <span class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full font-bold text-xl slot-active shadow-lg border-2 border-amber-300">${number}</span>
@@ -855,62 +755,35 @@
         function showWinModal() {
             if (!winModal) return;
             renderLeaderboard();
-            if (gameState.currentLevelIndex >= levelData.length - 1) {
-                nextLevelPrompt.classList.add('hidden'); allCompletePrompt.classList.remove('hidden');
-            } else {
-                nextLevelPrompt.classList.remove('hidden'); allCompletePrompt.classList.add('hidden');
-            }
+            if (gameState.currentLevelIndex >= levelData.length - 1) { nextLevelPrompt.classList.add('hidden'); allCompletePrompt.classList.remove('hidden'); } 
+            else { nextLevelPrompt.classList.remove('hidden'); allCompletePrompt.classList.add('hidden'); }
             winModal.classList.remove('hidden');
         }
 
         function renderLeaderboard() {
-            const container = document.getElementById('leaderboard-container');
-            if (!container) return;
+            const container = document.getElementById('leaderboard-container'); if (!container) return;
             const sorted = Object.values(gameState.leaderboard).sort((a, b) => b.score - a.score).slice(0, 10);
             if (sorted.length === 0) { container.innerHTML = '<p class="text-center text-slate-500 italic py-4">Belum ada data pemain.</p>'; return; }
             container.innerHTML = sorted.map((p, i) => `
                 <div class="flex items-center gap-3 p-2.5 bg-white rounded-lg shadow-sm border border-slate-100">
                     <div class="flex-shrink-0 w-8 text-center font-bold ${i===0?'text-2xl':i===1?'text-xl':i===2?'text-lg':'text-base text-slate-500'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
                     <img src="${p.profilePic}" class="w-9 h-9 rounded-full border-2 border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?';">
-                    <div class="flex-grow overflow-hidden">
-                        <p class="font-semibold text-slate-800 truncate">${p.nickname.replace(/</g, "&lt;")}</p>
-                    </div>
-                    <div class="flex-shrink-0 text-right bg-blue-50 px-2 py-1 rounded-md">
-                        <p class="font-bold text-blue-600">${p.score}<span class="text-xs font-normal text-blue-400 ml-1">pt</span></p>
-                    </div>
+                    <div class="flex-grow overflow-hidden"><p class="font-semibold text-slate-800 truncate">${p.nickname.replace(/</g, "&lt;")}</p></div>
+                    <div class="flex-shrink-0 text-right bg-blue-50 px-2 py-1 rounded-md"><p class="font-bold text-blue-600">${p.score}<span class="text-xs font-normal text-blue-400 ml-1">pt</span></p></div>
                 </div>`).join('');
         }
 
-        // PERUBAHAN: Fungsi showCorrectToast menerima parameter points
         function showCorrectToast(msg, points = 10) {
-            createToast(`
-                <img src="${msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-12 h-12 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'">
-                <div class="flex-grow overflow-hidden pr-2">
-                    <p class="font-bold text-white truncate text-shadow-sm text-lg">${(msg.nickname || msg.uniqueId || 'Anonim').replace(/</g, "&lt;")}</p>
-                    <p class="text-sm text-green-100 font-medium">${correctPhrases[Math.floor(Math.random() * correctPhrases.length)]}</p>
-                </div>
-                <div class="flex-shrink-0 bg-yellow-400 text-yellow-900 font-bangers px-3 py-1 rounded-full text-xl rotate-6 shadow-md animate-bounce">
-                    +${points}
-                </div>
-            `, 'correct');
+            createToast(`<img src="${msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-12 h-12 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'"><div class="flex-grow overflow-hidden pr-2"><p class="font-bold text-white truncate text-shadow-sm text-lg">${(msg.nickname || msg.uniqueId || 'Anonim').replace(/</g, "&lt;")}</p><p class="text-sm text-green-100 font-medium">${correctPhrases[Math.floor(Math.random() * correctPhrases.length)]}</p></div><div class="flex-shrink-0 bg-yellow-400 text-yellow-900 font-bangers px-3 py-1 rounded-full text-xl rotate-6 shadow-md animate-bounce">+${points}</div>`, 'correct');
         }
-
         function showIncorrectToast(msg) {
             if (toastContainer.querySelector('.toast-incorrect')) return;
-            if (simCommentInput && (!tiktokConnection || tiktokConnection.uniqueId === null)) {
-                 simCommentInput.classList.add('shake'); simCommentInput.addEventListener('animationend', () => simCommentInput.classList.remove('shake'), { once: true });
-            }
-            createToast(`
-                <img src="${msg.profilePictureUrl || 'https://placehold.co/40x40/EF4444/7F1D1D?text=X'}" class="w-10 h-10 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/EF4444/7F1D1D?text=X'">
-                <div class="flex-grow overflow-hidden"><p class="font-bold text-white truncate text-shadow-sm">${(msg.nickname || msg.uniqueId || 'Anonim').replace(/</g, "&lt;")}</p><p class="text-sm text-red-100 font-medium">${incorrectPhrases[Math.floor(Math.random() * incorrectPhrases.length)]}</p></div>
-            `, 'incorrect');
+            if (simCommentInput && (!tiktokConnection || tiktokConnection.uniqueId === null)) { simCommentInput.classList.add('shake'); simCommentInput.addEventListener('animationend', () => simCommentInput.classList.remove('shake'), { once: true }); }
+            createToast(`<img src="${msg.profilePictureUrl || 'https://placehold.co/40x40/EF4444/7F1D1D?text=X'}" class="w-10 h-10 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/EF4444/7F1D1D?text=X'"><div class="flex-grow overflow-hidden"><p class="font-bold text-white truncate text-shadow-sm">${(msg.nickname || msg.uniqueId || 'Anonim').replace(/</g, "&lt;")}</p><p class="text-sm text-red-100 font-medium">${incorrectPhrases[Math.floor(Math.random() * incorrectPhrases.length)]}</p></div>`, 'incorrect');
         }
         function createToast(html, type = 'correct') {
             if (!toastContainer) return;
-            const toast = document.createElement('div');
-            toast.className = `toast flex items-center gap-3 w-full p-3 rounded-xl shadow-lg backdrop-blur-md border border-white/10 ${type === 'incorrect' ? 'bg-red-500/90 toast-incorrect' : type === 'system' ? 'bg-blue-500/90' : 'bg-green-500/90'}`;
-            toast.innerHTML = html;
-            toastContainer.appendChild(toast);
+            const toast = document.createElement('div'); toast.className = `toast flex items-center gap-3 w-full p-3 rounded-xl shadow-lg backdrop-blur-md border border-white/10 ${type === 'incorrect' ? 'bg-red-500/90 toast-incorrect' : type === 'system' ? 'bg-blue-500/90' : 'bg-green-500/90'}`; toast.innerHTML = html; toastContainer.appendChild(toast);
             setTimeout(() => { toast.classList.add('toast-out'); toast.addEventListener('animationend', () => toast.remove(), { once: true }); }, 2500);
         }
         function addScore(uid, nick, pic, pts) {
@@ -918,74 +791,33 @@
             gameState.leaderboard[uid].score += pts; gameState.leaderboard[uid].nickname = nick; gameState.leaderboard[uid].profilePic = pic;
         }
 
-        // --- PERUBAHAN: Fungsi Update Cerdas dari GitHub ---
         async function fetchAndUpdateLevels() {
-            // Pastikan config terbaru dipakai
-            githubConfig.OWNER = ghUsernameInput.value.trim() || githubConfig.OWNER;
-            githubConfig.REPO = ghRepoInput.value.trim() || githubConfig.REPO;
-            githubConfig.PATH = ghPathInput.value.trim();
-
-            levelUpdateStatus.textContent = `Menghubungi GitHub (${githubConfig.OWNER}/${githubConfig.REPO})...`; 
-            levelUpdateStatus.className = "text-center text-sm text-slate-600 h-auto min-h-[1.25rem]";
-            
+            githubConfig.OWNER = ghUsernameInput.value.trim() || githubConfig.OWNER; githubConfig.REPO = ghRepoInput.value.trim() || githubConfig.REPO; githubConfig.PATH = ghPathInput.value.trim();
+            levelUpdateStatus.textContent = `Menghubungi GitHub (${githubConfig.OWNER}/${githubConfig.REPO})...`; levelUpdateStatus.className = "text-center text-sm text-slate-600 h-auto min-h-[1.25rem]";
             try {
-                let legacyData = [];
-                // --- MODIFIKASI: Legacy soal.json dimatikan sementara ---
-                /*
-                try {
-                    const legacyResp = await fetch(`https://raw.githubusercontent.com/${githubConfig.OWNER}/${githubConfig.REPO}/${githubConfig.BRANCH}/soal.json`);
-                    if (legacyResp.ok) legacyData = await legacyResp.json();
-                } catch (e) { }
-                */
-                // -------------------------------------------------------
-
                 const apiUrl = `https://api.github.com/repos/${githubConfig.OWNER}/${githubConfig.REPO}/contents/${githubConfig.PATH}`;
                 const response = await fetch(apiUrl);
-                
                 if (response.status === 404) throw new Error("Repository atau folder tidak ditemukan.");
                 if (response.status === 403) throw new Error("Rate limit GitHub tercapai. Tunggu beberapa saat.");
                 if (!response.ok) throw new Error(`Gagal akses GitHub: ${response.status}`);
-                
                 const dirContents = await response.json();
                 if (!Array.isArray(dirContents)) throw new Error("Bukan folder valid.");
-
                 const csvFiles = dirContents.filter(file => file.name.toLowerCase().endsWith('.csv') && file.type === 'file');
-                
-                if (csvFiles.length === 0 && legacyData.length === 0) {
-                    throw new Error("Tidak ditemukan file CSV di lokasi ini.");
-                }
-
+                if (csvFiles.length === 0) throw new Error("Tidak ditemukan file CSV di lokasi ini.");
                 levelUpdateStatus.textContent = `Menemukan ${csvFiles.length} file CSV. Mengunduh...`;
-
                 csvFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
-
-                const fetchPromises = csvFiles.map(file => fetch(file.download_url).then(r => {
-                    if (!r.ok) throw new Error(`Gagal unduh ${file.name}`);
-                    return r.text();
-                }));
-                
-                const rawCsvData = await Promise.all(fetchPromises);
-
-                let combinedLevels = [...(Array.isArray(legacyData) ? legacyData : [])];
-                rawCsvData.forEach((csvText) => {
-                    combinedLevels = combinedLevels.concat(parseCSV(csvText));
-                });
-
+                const rawCsvData = await Promise.all(csvFiles.map(file => fetch(file.download_url).then(r => { if (!r.ok) throw new Error(`Gagal unduh ${file.name}`); return r.text(); })));
+                let combinedLevels = [];
+                rawCsvData.forEach((csvText) => { combinedLevels = combinedLevels.concat(parseCSV(csvText)); });
                 if (combinedLevels.length === 0) throw new Error("Data soal kosong setelah diproses.");
-
                 combinedLevels.forEach((lvl, idx) => lvl.level = idx + 1);
-
                 levelData = combinedLevels;
                 localStorage.setItem(CUSTOM_LEVEL_DATA_KEY, JSON.stringify(levelData));
-                
-                levelUpdateStatus.textContent = `Sukses! Total ${levelData.length} level dimuat.`;
-                levelUpdateStatus.className = "text-center text-sm text-green-600 h-auto min-h-[1.25rem]";
+                levelUpdateStatus.textContent = `Sukses! Total ${levelData.length} level dimuat.`; levelUpdateStatus.className = "text-center text-sm text-green-600 h-auto min-h-[1.25rem]";
                 resetGameProgress();
-
             } catch (error) {
                 console.error("Update GitHub Gagal:", error);
-                levelUpdateStatus.textContent = `Gagal: ${error.message}`; 
-                levelUpdateStatus.className = "text-center text-sm text-red-600 h-auto min-h-[1.25rem]";
+                levelUpdateStatus.textContent = `Gagal: ${error.message}`; levelUpdateStatus.className = "text-center text-sm text-red-600 h-auto min-h-[1.25rem]";
             }
         }
 
@@ -997,9 +829,7 @@
         function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState)); }
         function loadState() {
             const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try { gameState = JSON.parse(saved); } catch (e) { console.error(e); resetGameProgress(); }
-            } else resetGameProgress();
+            if (saved) { try { gameState = JSON.parse(saved); } catch (e) { console.error(e); resetGameProgress(); } } else resetGameProgress();
         }
 
         init();
