@@ -152,14 +152,21 @@
             </section>
 
             <!-- Pemilih Level & Tombol Mulai --><section class="space-y-3">
-                <!-- Dropdown Pemilih Level -->
+                <!-- Dropdown Stage (Baru) -->
                 <div>
-                    <label for="level-select" class="block text-sm font-medium text-slate-700 mb-1">Pilih Level Awal:</label>
+                    <label for="stage-select" class="block text-sm font-medium text-slate-700 mb-1">Pilih Stage:</label>
+                    <select id="stage-select" class="w-full bg-slate-100 border-2 border-slate-300 text-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="1">Stage 1 (Level 1-10)</option>
+                    </select>
+                </div>
+
+                <!-- Dropdown Level -->
+                <div>
+                    <label for="level-select" class="block text-sm font-medium text-slate-700 mb-1">Pilih Level:</label>
                     <select id="level-select" class="w-full bg-slate-100 border-2 border-slate-300 text-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="0">Memuat level...</option>
                     </select>
                 </div>
-                <!-- Akhir Dropdown -->
 
                 <button data-action="start-game" id="start-game-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all transform hover:scale-105 active:scale-95 focus:outline-none disabled:bg-slate-400 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-green-600/30">
                     MULAI GAME!
@@ -223,8 +230,10 @@
             <!-- Judul Tengah -->
             <div class="text-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full pointer-events-none">
                 <h2 class="font-bangers text-3xl tracking-wider drop-shadow-md">Kata Berkait</h2>
-                <div class="flex items-center justify-center gap-2">
-                    <h1 id="level-title" class="text-xl font-semibold -mt-1 opacity-90">Level 1</h1>
+                <div class="flex items-center justify-center gap-2 flex-wrap">
+                    <!-- PENAMBAHAN: Info Stage -->
+                    <span id="stage-info" class="text-sm bg-white/20 px-2 py-0.5 rounded-full font-medium backdrop-blur-sm">Stage 1</span>
+                    <h1 id="level-title" class="text-xl font-semibold opacity-90">Level 1</h1>
                     <!-- Tombol Reconnect Kecil di Header -->
                     <button id="header-reconnect-btn" data-action="manual-reconnect" class="hidden pointer-events-auto bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 animate-pulse transition-colors" title="Koneksi Terputus! Klik untuk hubungkan ulang.">
                         <i data-lucide="wifi-off" class="w-3 h-3"></i>
@@ -235,7 +244,6 @@
 
             <!-- Tombol Aksi Kanan (Reset & Skip) -->
             <div class="flex items-center gap-2 z-10">
-                <!-- Tombol Skip Level -->
                 <button data-action="skip-level" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-amber-500/80 hover:bg-amber-600 text-white backdrop-blur-sm transition-colors" title="Lewati level ini">
                     <i data-lucide="fast-forward" class="w-4 h-4"></i>
                     <span class="font-medium text-sm hidden sm:inline">Skip</span>
@@ -373,6 +381,7 @@
         const simCommentInput = document.getElementById('sim-comment');
         const levelUpdateStatus = document.getElementById('level-update-status');
         const levelTitle = document.getElementById('level-title');
+        const stageInfo = document.getElementById('stage-info'); // SELECTOR BARU
         const wordListContainer = document.getElementById('word-list-container');
         const winModal = document.getElementById('win-modal');
         const nextLevelPrompt = document.getElementById('next-level-prompt');
@@ -386,6 +395,7 @@
         const ghUsernameInput = document.getElementById('gh-username');
         const ghRepoInput = document.getElementById('gh-repo');
         const ghPathInput = document.getElementById('gh-path');
+        const stageSelect = document.getElementById('stage-select'); // SELECTOR BARU
         const levelSelect = document.getElementById('level-select');
         const headerReconnectBtn = document.getElementById('header-reconnect-btn');
 
@@ -417,20 +427,11 @@
                     case 'start-game': startOrContinueGame(); break;
                     case 'go-home': goToHome(); break;
                     case 'reset-game': if (window.confirm('Reset level ini? Progres akan hilang.')) loadLevel(gameState.currentLevelIndex, true); break;
-                    // PENAMBAHAN: Listener untuk tombol Skip Level
-                    case 'skip-level': 
-                        if (window.confirm('Yakin ingin melewati level ini? Anda tidak akan mendapat poin penyelesaian.')) {
-                            loadNextLevel();
-                        }
-                        break;
-                    // AKHIR PENAMBAHAN
+                    case 'skip-level': if (window.confirm('Yakin ingin melewati level ini? Anda tidak akan mendapat poin penyelesaian.')) loadNextLevel(); break;
                     case 'connect-tiktok': connectToTikTok(); break;
                     case 'manual-reconnect': 
                         const userToConnect = tiktokUsername.value.trim() || lastConnectedUsername;
-                        if (userToConnect) { 
-                            if(disconnectReason) disconnectReason.textContent = `Menghubungkan ulang ke @${userToConnect}...`; 
-                            connectToTikTok(userToConnect); 
-                        } else { goToHome(); } 
+                        if (userToConnect) { if(disconnectReason) disconnectReason.textContent = `Menghubungkan ulang ke @${userToConnect}...`; connectToTikTok(userToConnect); } else { goToHome(); } 
                         break;
                     case 'sim-send': if (simCommentInput && simCommentInput.value.trim()) { handleComment({ comment: simCommentInput.value.trim(), uniqueId: 'simulator_user_id', nickname: 'Pemain Simulasi', profilePictureUrl: 'https://placehold.co/40x40/0284C7/FFFFFF?text=S' }); simCommentInput.value = ''; } break;
                     case 'update-levels': fetchAndUpdateLevels(); break;
@@ -441,10 +442,10 @@
             });
             if (simCommentInput) simCommentInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.querySelector('[data-action="sim-send"]').click(); } });
             if (csvFileInput) csvFileInput.addEventListener('change', handleCSVUpload);
+            if (stageSelect) stageSelect.addEventListener('change', () => { populateLevelSelect(); updateHomeUI(); }); // Listener Stage
             if (levelSelect) {
                 levelSelect.addEventListener('change', (e) => {
                     gameState.currentLevelIndex = parseInt(e.target.value, 10);
-                    if (gameState.isGameActive) { }
                     updateHomeUI();
                 });
             }
@@ -482,7 +483,11 @@
                     const parsedLevels = parseCSV(e.target.result);
                     if (parsedLevels && parsedLevels.length > 0) {
                         levelData = parsedLevels;
-                        levelData.forEach((lvl, idx) => lvl.level = idx + 1);
+                        // Hitung ulang stage dan level
+                        levelData.forEach((lvl, idx) => {
+                            lvl.level = idx + 1;
+                            lvl.stage = Math.floor(idx / 10) + 1; // Stage 1: 0-9, Stage 2: 10-19, dst.
+                        });
                         localStorage.setItem(CUSTOM_LEVEL_DATA_KEY, JSON.stringify(levelData));
                         resetGameProgress();
                         levelUpdateStatus.textContent = `Sukses! ${parsedLevels.length} level diimpor dari CSV.`; levelUpdateStatus.className = "text-center text-sm text-green-600 h-auto min-h-[1.25rem]";
@@ -503,58 +508,62 @@
             for (let i = 1; i < lines.length; i++) {
                 const cols = lines[i].split(',');
                 if (cols.length < 10) continue; 
-                
                 const rawWords = cols.slice(0, 10).map(w => w.trim()).filter(w => w !== '');
                 if (rawWords.length === 0) continue;
-
-                const words = [];
-                const bonusWords = new Array(rawWords.length).fill(false);
-
+                const words = []; const bonusWords = new Array(rawWords.length).fill(false);
                 rawWords.forEach((rawWord, index) => {
-                    // PERUBAHAN: Abaikan kata jika isinya persis "BACA CLUE" (case-insensitive)
-                    if (rawWord.toUpperCase() === 'BACA CLUE') {
-                        // Jangan masukkan ke array 'words', skip iterasi ini.
-                        // Kita juga harus memastikan index bonusWords tetap sinkron jika kita men-skip kata.
-                        // Namun, karena struktur CSV biasanya tetap, lebih aman jika kita anggap ini bukan kata valid.
-                        // Jika 'BACA CLUE' ada di tengah-tengah, ini bisa menggeser indeks.
-                        // Asumsi: 'BACA CLUE' hanya muncul di awal/akhir yang tidak seharusnya jadi soal.
-                        return; 
-                    }
-
-                    if (rawWord.includes('[*]')) {
-                        // PERBAIKAN UTAMA: Gunakan regex untuk menghapus semua [*] dan trim() hasilnya
-                        words.push(rawWord.replace(/\[\*\]/g, '').trim()); 
-                        bonusWords[words.length - 1] = true; 
-                    } else {
-                        words.push(rawWord);
-                    }
+                    if (rawWord.toUpperCase() === 'BACA CLUE') return; 
+                    if (rawWord.includes('[*]')) { words.push(rawWord.replace(/\[\*\]/g, '').trim()); bonusWords[words.length - 1] = true; } else { words.push(rawWord); }
                 });
-                
-                // Jika setelah difilter tidak ada kata tersisa, skip baris ini
                 if (words.length === 0) continue;
-
                 let clues = new Array(words.length).fill('');
-                // Perlu penyesuaian indeks clue karena mungkin ada kata yang di-skip
-                // Jika struktur CSV konsisten (BACA CLUE selalu di kolom 0), maka offset tetap bisa dipakai.
-                // Mari kita coba pertahankan logika offset dulu, tapi harus hati-hati.
-                
                 for (let j = 1; j < words.length; j++) {
                     const clueColIndex = 11 + j; 
                     if (cols[clueColIndex]) {
                         let clue = cols[clueColIndex].trim();
-                        if (clue && !clue.match(/\.(jpg|jpeg|png|gif)$/i)) {
-                            clues[j] = clue;
-                        } else {
-                            clues[j] = ''; 
-                        }
+                        if (clue && !clue.match(/\.(jpg|jpeg|png|gif)$/i)) { clues[j] = clue; } else { clues[j] = ''; }
                     }
                 }
                 let difficulty = 'Medium';
                 for (let k = cols.length - 1; k >= 0; k--) { if (cols[k] && cols[k].trim() !== '') { difficulty = cols[k].trim(); break; } }
                 
-                levels.push({ difficulty: difficulty, words: words, clues: clues, openSlots: [0], bonusWords: bonusWords.slice(0, words.length) });
+                // PERUBAHAN PENTING: Set openSlots untuk kata pertama dan terakhir
+                const openSlots = [0];
+                if (words.length > 1) {
+                    openSlots.push(words.length - 1);
+                }
+
+                levels.push({ difficulty: difficulty, words: words, clues: clues, openSlots: openSlots, bonusWords: bonusWords.slice(0, words.length) });
             }
             return levels;
+        }
+
+        // FUNGSI BARU: Populate Stage Select
+        function populateStageSelect() {
+            if (!stageSelect || !levelData || levelData.length === 0) return;
+            
+            const maxStage = levelData[levelData.length - 1].stage || 1;
+            const currentSelectedStage = stageSelect.value;
+            
+            stageSelect.innerHTML = '';
+            for (let i = 1; i <= maxStage; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                // Hitung range level untuk stage ini
+                const startLevel = (i - 1) * 10 + 1;
+                const endLevel = Math.min(i * 10, levelData.length);
+                option.textContent = `Stage ${i} (Level ${startLevel}-${endLevel})`;
+                stageSelect.appendChild(option);
+            }
+            
+            // Kembalikan seleksi jika masih valid, atau pilih stage dari level saat ini
+            if (currentSelectedStage && currentSelectedStage <= maxStage) {
+                stageSelect.value = currentSelectedStage;
+            } else {
+                const currentLevelStage = levelData[gameState.currentLevelIndex]?.stage || 1;
+                stageSelect.value = currentLevelStage;
+            }
+            stageSelect.disabled = false;
         }
 
         function populateLevelSelect() {
@@ -563,44 +572,80 @@
             if (!levelData || levelData.length === 0) {
                 levelSelect.innerHTML = '<option value="0">Tidak ada data level</option>';
                 levelSelect.disabled = true;
+                stageSelect.disabled = true;
                 return;
             }
-            levelData.forEach((level, index) => {
+
+            // Filter level berdasarkan stage yang dipilih
+            const selectedStage = parseInt(stageSelect.value, 10) || 1;
+            const filteredLevels = levelData.map((lvl, idx) => ({...lvl, originalIndex: idx}))
+                                            .filter(lvl => lvl.stage === selectedStage);
+
+            if (filteredLevels.length === 0) {
+                 levelSelect.innerHTML = '<option value="0">Stage kosong</option>';
+                 levelSelect.disabled = true;
+                 return;
+            }
+
+            filteredLevels.forEach((level) => {
                 const option = document.createElement('option');
-                option.value = index;
+                option.value = level.originalIndex; // Tetap gunakan index asli untuk referensi
                 option.textContent = `Level ${level.level} (${level.words.length} Kata) - ${level.difficulty || 'Normal'}`;
                 levelSelect.appendChild(option);
             });
+            
             levelSelect.disabled = false;
-            levelSelect.value = gameState.currentLevelIndex;
+            
+            // Coba set value ke currentLevelIndex jika dia ada di stage ini
+            const isCurrentLevelInStage = filteredLevels.some(lvl => lvl.originalIndex === gameState.currentLevelIndex);
+            if (isCurrentLevelInStage) {
+                levelSelect.value = gameState.currentLevelIndex;
+            } else {
+                // Jika tidak, pilih level pertama di stage ini
+                levelSelect.value = filteredLevels[0].originalIndex;
+                gameState.currentLevelIndex = filteredLevels[0].originalIndex; // Update state sementara agar sinkron
+            }
         }
 
         function updateHomeUI() {
             if (!startGameButton || !gameStatus) return;
-            populateLevelSelect(); 
-
+            
             if (!levelData || levelData.length === 0) {
                 startGameButton.textContent = 'Data Soal Kosong'; startGameButton.disabled = true;
                 gameStatus.textContent = 'Silakan update dari GitHub atau Import CSV.';
+                if (stageSelect) stageSelect.disabled = true;
+                if (levelSelect) levelSelect.disabled = true;
                 return;
             }
-            
-            if (gameState.currentLevelIndex >= levelData.length || gameState.currentLevelIndex < 0) {
-                 gameState.currentLevelIndex = 0;
+
+            // Pastikan populate dijalankan sekali di awal atau saat data berubah
+            if (stageSelect && stageSelect.options.length <= 1) { // Populate jika kosong atau cuma placeholder
+                 populateStageSelect();
+                 populateLevelSelect();
             }
-            
+
+            if (gameState.currentLevelIndex >= levelData.length || gameState.currentLevelIndex < 0) gameState.currentLevelIndex = 0;
             let currentLevel = levelData[gameState.currentLevelIndex];
             if (!currentLevel) { gameState.currentLevelIndex = 0; currentLevel = levelData[0]; }
 
-            if (levelSelect) levelSelect.value = gameState.currentLevelIndex;
+            // Sinkronkan dropdown jika game aktif dan user kembali ke home
+            if (stageSelect && currentLevel.stage && parseInt(stageSelect.value) !== currentLevel.stage) {
+                 stageSelect.value = currentLevel.stage;
+                 populateLevelSelect(); // Refresh level list sesuai stage baru
+            }
+            if (levelSelect && parseInt(levelSelect.value) !== gameState.currentLevelIndex) {
+                 levelSelect.value = gameState.currentLevelIndex;
+            }
 
             if (gameState.isGameActive && gameState.revealedWords.some(w => w !== null)) {
                 startGameButton.textContent = `LANJUT LEVEL ${currentLevel.level}`;
-                gameStatus.textContent = `Sedang main: Level ${currentLevel.level}`;
+                gameStatus.textContent = `Sedang main: Stage ${currentLevel.stage} - Level ${currentLevel.level}`;
+                if (stageSelect) stageSelect.disabled = true;
                 if (levelSelect) levelSelect.disabled = true;
             } else {
                 startGameButton.textContent = 'MULAI GAME!';
-                gameStatus.textContent = `Akan mulai dari Level ${currentLevel.level}`;
+                gameStatus.textContent = `Akan mulai dari Stage ${currentLevel.stage} - Level ${currentLevel.level}`;
+                if (stageSelect) stageSelect.disabled = false;
                 if (levelSelect) levelSelect.disabled = false;
             }
 
@@ -633,7 +678,7 @@
             if (forceReset || gameState.revealedWords.length !== level.words.length || !gameState.isGameActive) {
                 gameState.isLevelComplete = false; isProcessingWin = false;
                 gameState.revealedWords = new Array(level.words.length).fill(null);
-                (level.openSlots || [0]).forEach(index => { if (index < level.words.length) gameState.revealedWords[index] = { word: level.words[index], solver: { nickname: 'AHMAD', profilePic: 'https://placehold.co/40x40/60A5FA/FFFFFF?text=棲' } }; });
+                (level.openSlots || [0]).forEach(index => { if (index < level.words.length) gameState.revealedWords[index] = { word: level.words[index], solver: { nickname: 'SISTEM', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } }; });
                 updateNextSlotToGuess();
             } else if (gameState.nextSlotToGuess === -1 && !gameState.isLevelComplete) { gameState.isLevelComplete = true; showWinModal(); }
             if (simContainer) simContainer.classList.toggle('hidden', tiktokConnection != null && tiktokConnection.uniqueId !== null);
@@ -643,7 +688,11 @@
         
         function updateNextSlotToGuess() {
             if (isProcessingWin || (gameState.isLevelComplete && winModal && !winModal.classList.contains('hidden'))) return;
-            const nextIndex = gameState.revealedWords.indexOf(null);
+            
+            // PERBAIKAN LOGIKA: Cari slot KOSONG pertama
+            // Slot terakhir mungkin sudah terisi karena default openSlots, jadi kita harus melewatinya jika sudah terisi.
+            const nextIndex = gameState.revealedWords.findIndex(word => word === null);
+            
             gameState.nextSlotToGuess = nextIndex;
             if (nextIndex === -1 && gameState.isGameActive && !gameState.isLevelComplete) {
                 isProcessingWin = true; gameState.isLevelComplete = true; saveState(); showWinModal(); confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
@@ -662,19 +711,14 @@
             if (!tiktokUsername || !tiktokStatus || !connectButton) return;
             const uniqueId = usernameToConnect ? usernameToConnect : tiktokUsername.value.trim();
             if (!uniqueId) { tiktokStatus.textContent = 'Username kosong!'; tiktokStatus.classList.add('text-red-600'); return; }
-            
             tiktokStatus.textContent = `Menghubungkan ke @${uniqueId}...`;
             if (disconnectNotification && !disconnectNotification.classList.contains('hidden')) disconnectReason.textContent = `Menghubungkan ke @${uniqueId}...`;
-            
             tiktokStatus.classList.remove('text-red-600', 'text-green-600'); connectButton.disabled = true; startGameButton.disabled = true;
-            
             if (tiktokConnection) { tiktokConnection.removeAllCustomListeners(); tiktokConnection.socket.disconnect(); tiktokConnection = null; }
             tiktokConnection = new TikTokIOConnection("https://tiktok-server-production-e573.up.railway.app");
             tiktokConnection.connect(uniqueId, {}).then(state => {
                 tiktokStatus.textContent = `Terhubung ke @${uniqueId}`; tiktokStatus.classList.remove('text-red-600'); tiktokStatus.classList.add('text-green-600');
-                startGameButton.disabled = false; 
-                saveLastUsername(uniqueId); 
-                
+                startGameButton.disabled = false; saveLastUsername(uniqueId); 
                 if (disconnectNotification) disconnectNotification.classList.add('hidden'); 
                 if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); 
                 if (simContainer) simContainer.classList.add('hidden');
@@ -695,8 +739,7 @@
                 if (disconnectReason) disconnectReason.textContent = reason; 
                 if (disconnectNotification) disconnectNotification.classList.remove('hidden'); 
                 if (headerReconnectBtn) headerReconnectBtn.classList.remove('hidden'); 
-                lucide.createIcons(); 
-                if (simContainer) simContainer.classList.add('hidden'); 
+                lucide.createIcons(); if (simContainer) simContainer.classList.add('hidden'); 
             }
         }
 
@@ -735,19 +778,14 @@
             if (comment === correctWord) {
                 const isBonus = level.bonusWords && level.bonusWords[gameState.nextSlotToGuess];
                 const points = isBonus ? 20 : 10; 
-
                 showCorrectToast(msg, points, isBonus); 
-                
                 const userId = msg.uniqueId;
                 const nickname = (msg.nickname && msg.nickname.trim() !== '') ? msg.nickname : msg.uniqueId || 'Anonim';
                 const profilePic = msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)';
-                
                 if (userId) addScore(userId, nickname, profilePic, points);
-                
                 gameState.revealedWords[gameState.nextSlotToGuess] = { word: correctWord, solver: { nickname, profilePic } };
                 const solvedIndex = gameState.nextSlotToGuess; 
-                updateNextSlotToGuess(); 
-                saveState();
+                updateNextSlotToGuess(); saveState();
                 renderSingleSlot(solvedIndex, gameState.revealedWords[solvedIndex]); 
                 if (gameState.nextSlotToGuess !== -1) renderSingleSlot(gameState.nextSlotToGuess, null); 
             } else {
@@ -759,6 +797,9 @@
         function renderGameUI() {
             const level = levelData[gameState.currentLevelIndex];
             if (levelTitle) levelTitle.textContent = `Level ${level.level}`;
+            // PENAMBAHAN: Update info stage di header game
+            if (stageInfo && level) stageInfo.textContent = `Stage ${level.stage}`;
+            
             if (wordListContainer) {
                 wordListContainer.innerHTML = ''; 
                 level.words.forEach((word, index) => { renderSingleSlot(index, gameState.revealedWords[index], true); });
@@ -779,7 +820,6 @@
             if (revealedData) {
                 const safeNickname = revealedData.solver.nickname.replace(/</g, "&lt;");
                 const bonusClass = isBonus ? 'ring-2 ring-yellow-400' : ''; 
-                
                 slotElement.className = "flex items-center gap-3 opacity-90 pop-in";
                 slotHTML = `
                     <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-white text-slate-800 font-bold text-lg shadow-sm">${number}</span>
@@ -798,14 +838,9 @@
                 let clue = level.clues[index] || 'Tebak!';
                 let clueHTML = `<span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-sm">${clue}</span>`;
                 if (difficulty === 'sulit') clueHTML = ''; 
-                
                 let containerClass = "flex-grow flex items-center justify-between p-4 rounded-xl word-slot-shadow slot-active-box border-2 border-amber-300";
                 let bonusIcon = '';
-                if (isBonus) {
-                    containerClass += " bonus-slot"; 
-                    bonusIcon = '<i data-lucide="star" class="w-6 h-6 text-yellow-600 fill-yellow-400 animate-spin-slow absolute top-0 right-0 -mt-2 -mr-2"></i>'; 
-                }
-
+                if (isBonus) { containerClass += " bonus-slot"; bonusIcon = '<i data-lucide="star" class="w-6 h-6 text-yellow-600 fill-yellow-400 animate-spin-slow absolute top-0 right-0 -mt-2 -mr-2"></i>'; }
                 slotElement.className = "flex items-center gap-3 pop-in scale-105 transition-transform";
                 slotHTML = `
                     <span class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full font-bold text-xl slot-active shadow-lg border-2 border-amber-300">${number}</span>
@@ -850,12 +885,7 @@
         function showCorrectToast(msg, points = 10, isBonus = false) {
             let pointsHTML = `+${points}`;
             let pointsClass = "bg-yellow-400 text-yellow-900";
-            
-            if (isBonus) {
-                pointsHTML = `BONUS! +${points}`;
-                pointsClass = "bg-gradient-to-r from-yellow-300 to-amber-500 text-amber-900 animate-pulse scale-110 border-2 border-white";
-            }
-
+            if (isBonus) { pointsHTML = `BONUS! +${points}`; pointsClass = "bg-gradient-to-r from-yellow-300 to-amber-500 text-amber-900 animate-pulse scale-110 border-2 border-white"; }
             createToast(`<img src="${msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-12 h-12 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'"><div class="flex-grow overflow-hidden pr-2"><p class="font-bold text-white truncate text-shadow-sm text-lg">${(msg.nickname || msg.uniqueId || 'Anonim').replace(/</g, "&lt;")}</p><p class="text-sm text-green-100 font-medium">${correctPhrases[Math.floor(Math.random() * correctPhrases.length)]}</p></div><div class="flex-shrink-0 font-bangers px-3 py-1 rounded-full text-xl rotate-6 shadow-md ${pointsClass}">${pointsHTML}</div>`, 'correct');
         }
         function showIncorrectToast(msg) {
@@ -892,7 +922,11 @@
                 let combinedLevels = [];
                 rawCsvData.forEach((csvText) => { combinedLevels = combinedLevels.concat(parseCSV(csvText)); });
                 if (combinedLevels.length === 0) throw new Error("Data soal kosong setelah diproses.");
-                combinedLevels.forEach((lvl, idx) => lvl.level = idx + 1);
+                // PENAMBAHAN: Hitung Level dan Stage
+                combinedLevels.forEach((lvl, idx) => {
+                    lvl.level = idx + 1;
+                    lvl.stage = Math.floor(idx / 10) + 1; // Hitung stage
+                });
                 levelData = combinedLevels;
                 localStorage.setItem(CUSTOM_LEVEL_DATA_KEY, JSON.stringify(levelData));
                 levelUpdateStatus.textContent = `Sukses! Total ${levelData.length} level dimuat.`; levelUpdateStatus.className = "text-center text-sm text-green-600 h-auto min-h-[1.25rem]";
@@ -906,6 +940,7 @@
         function resetGameProgress() {
             localStorage.removeItem(STORAGE_KEY);
             gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: {} };
+            // populateStageSelect(); // Reset dan populate ulang dropdown
             updateHomeUI();
         }
         function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState)); }
