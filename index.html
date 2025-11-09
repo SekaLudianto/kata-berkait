@@ -233,11 +233,19 @@
                 </div>
             </div>
 
-            <!-- Tombol Reset Kanan -->
-            <button data-action="reset-game" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-red-500/80 hover:bg-red-600 text-white backdrop-blur-sm transition-colors z-10">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                <span class="font-medium text-sm">Reset</span>
-            </button>
+            <!-- Tombol Aksi Kanan (Reset & Skip) -->
+            <div class="flex items-center gap-2 z-10">
+                <!-- PERUBAHAN: Tombol Skip Level -->
+                <button data-action="skip-level" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-amber-500/80 hover:bg-amber-600 text-white backdrop-blur-sm transition-colors" title="Lewati level ini">
+                    <i data-lucide="fast-forward" class="w-4 h-4"></i>
+                    <span class="font-medium text-sm hidden sm:inline">Skip</span>
+                </button>
+                <!-- AKHIR PERUBAHAN -->
+                <button data-action="reset-game" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-red-500/80 hover:bg-red-600 text-white backdrop-blur-sm transition-colors" title="Reset progres level ini">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    <span class="font-medium text-sm hidden sm:inline">Reset</span>
+                </button>
+            </div>
         </header>
 
         <!-- Notifikasi Koneksi Terputus (Besar) --><div id="disconnect-notification" class="w-full max-w-2xl mx-auto px-4 pb-2 hidden z-20">
@@ -410,6 +418,13 @@
                     case 'start-game': startOrContinueGame(); break;
                     case 'go-home': goToHome(); break;
                     case 'reset-game': if (window.confirm('Reset level ini? Progres akan hilang.')) loadLevel(gameState.currentLevelIndex, true); break;
+                    // PENAMBAHAN: Listener untuk tombol Skip Level
+                    case 'skip-level': 
+                        if (window.confirm('Yakin ingin melewati level ini? Anda tidak akan mendapat poin penyelesaian.')) {
+                            loadNextLevel();
+                        }
+                        break;
+                    // AKHIR PENAMBAHAN
                     case 'connect-tiktok': connectToTikTok(); break;
                     case 'manual-reconnect': 
                         const userToConnect = tiktokUsername.value.trim() || lastConnectedUsername;
@@ -493,21 +508,36 @@
                 const rawWords = cols.slice(0, 10).map(w => w.trim()).filter(w => w !== '');
                 if (rawWords.length === 0) continue;
 
-                // PERUBAHAN UTAMA: Deteksi dan pisahkan kata bonus
                 const words = [];
                 const bonusWords = new Array(rawWords.length).fill(false);
 
                 rawWords.forEach((rawWord, index) => {
+                    // PERUBAHAN: Abaikan kata jika isinya persis "BACA CLUE" (case-insensitive)
+                    if (rawWord.toUpperCase() === 'BACA CLUE') {
+                        // Jangan masukkan ke array 'words', skip iterasi ini.
+                        // Kita juga harus memastikan index bonusWords tetap sinkron jika kita men-skip kata.
+                        // Namun, karena struktur CSV biasanya tetap, lebih aman jika kita anggap ini bukan kata valid.
+                        // Jika 'BACA CLUE' ada di tengah-tengah, ini bisa menggeser indeks.
+                        // Asumsi: 'BACA CLUE' hanya muncul di awal/akhir yang tidak seharusnya jadi soal.
+                        return; 
+                    }
+
                     if (rawWord.endsWith('[*]')) {
-                        words.push(rawWord.replace('[*]', '')); // Hapus tanda [*] untuk kata yang ditebak
-                        bonusWords[index] = true; // Tandai sebagai bonus
+                        words.push(rawWord.replace('[*]', '')); 
+                        bonusWords[words.length - 1] = true; // Gunakan index terbaru dari 'words'
                     } else {
                         words.push(rawWord);
                     }
                 });
-                // ---
+                
+                // Jika setelah difilter tidak ada kata tersisa, skip baris ini
+                if (words.length === 0) continue;
 
                 let clues = new Array(words.length).fill('');
+                // Perlu penyesuaian indeks clue karena mungkin ada kata yang di-skip
+                // Jika struktur CSV konsisten (BACA CLUE selalu di kolom 0), maka offset tetap bisa dipakai.
+                // Mari kita coba pertahankan logika offset dulu, tapi harus hati-hati.
+                
                 for (let j = 1; j < words.length; j++) {
                     const clueColIndex = 11 + j; 
                     if (cols[clueColIndex]) {
@@ -522,8 +552,7 @@
                 let difficulty = 'Medium';
                 for (let k = cols.length - 1; k >= 0; k--) { if (cols[k] && cols[k].trim() !== '') { difficulty = cols[k].trim(); break; } }
                 
-                // Masukkan bonusWords ke data level
-                levels.push({ difficulty: difficulty, words: words, clues: clues, openSlots: [0], bonusWords: bonusWords });
+                levels.push({ difficulty: difficulty, words: words, clues: clues, openSlots: [0], bonusWords: bonusWords.slice(0, words.length) });
             }
             return levels;
         }
@@ -704,11 +733,10 @@
             
             const correctWord = level.words[gameState.nextSlotToGuess];
             if (comment === correctWord) {
-                // PERUBAHAN: Cek apakah kata ini adalah kata bonus
                 const isBonus = level.bonusWords && level.bonusWords[gameState.nextSlotToGuess];
-                const points = isBonus ? 20 : 10; // Poin ganda jika bonus
+                const points = isBonus ? 20 : 10; 
 
-                showCorrectToast(msg, points, isBonus); // Kirim status bonus ke toast
+                showCorrectToast(msg, points, isBonus); 
                 
                 const userId = msg.uniqueId;
                 const nickname = (msg.nickname && msg.nickname.trim() !== '') ? msg.nickname : msg.uniqueId || 'Anonim';
@@ -741,7 +769,6 @@
         function renderSingleSlot(index, revealedData, isInitialRender = false) {
             const level = levelData[gameState.currentLevelIndex];
             const number = index + 1;
-            // Cek status bonus untuk slot ini
             const isBonus = level.bonusWords && level.bonusWords[index];
 
             let slotElement = document.getElementById(`slot-${index}`);
@@ -751,7 +778,6 @@
             let slotHTML = '';
             if (revealedData) {
                 const safeNickname = revealedData.solver.nickname.replace(/</g, "&lt;");
-                // Tambahkan class bonus-slot jika kata bonus sudah terjawab (opsional, agar tetap terlihat spesial)
                 const bonusClass = isBonus ? 'ring-2 ring-yellow-400' : ''; 
                 
                 slotElement.className = "flex items-center gap-3 opacity-90 pop-in";
@@ -773,12 +799,11 @@
                 let clueHTML = `<span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-sm">${clue}</span>`;
                 if (difficulty === 'sulit') clueHTML = ''; 
                 
-                // PERUBAHAN: Tampilan khusus untuk slot bonus yang sedang aktif
                 let containerClass = "flex-grow flex items-center justify-between p-4 rounded-xl word-slot-shadow slot-active-box border-2 border-amber-300";
                 let bonusIcon = '';
                 if (isBonus) {
-                    containerClass += " bonus-slot"; // Tambahkan animasi bonus
-                    bonusIcon = '<i data-lucide="star" class="w-6 h-6 text-yellow-600 fill-yellow-400 animate-spin-slow absolute top-0 right-0 -mt-2 -mr-2"></i>'; // Ikon bintang
+                    containerClass += " bonus-slot"; 
+                    bonusIcon = '<i data-lucide="star" class="w-6 h-6 text-yellow-600 fill-yellow-400 animate-spin-slow absolute top-0 right-0 -mt-2 -mr-2"></i>'; 
                 }
 
                 slotElement.className = "flex items-center gap-3 pop-in scale-105 transition-transform";
@@ -822,7 +847,6 @@
                 </div>`).join('');
         }
 
-        // PERUBAHAN: Parameter isBonus untuk tampilan toast spesial
         function showCorrectToast(msg, points = 10, isBonus = false) {
             let pointsHTML = `+${points}`;
             let pointsClass = "bg-yellow-400 text-yellow-900";
