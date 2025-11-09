@@ -235,12 +235,11 @@
 
             <!-- Tombol Aksi Kanan (Reset & Skip) -->
             <div class="flex items-center gap-2 z-10">
-                <!-- PERUBAHAN: Tombol Skip Level -->
+                <!-- Tombol Skip Level -->
                 <button data-action="skip-level" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-amber-500/80 hover:bg-amber-600 text-white backdrop-blur-sm transition-colors" title="Lewati level ini">
                     <i data-lucide="fast-forward" class="w-4 h-4"></i>
                     <span class="font-medium text-sm hidden sm:inline">Skip</span>
                 </button>
-                <!-- AKHIR PERUBAHAN -->
                 <button data-action="reset-game" class="flex items-center space-x-1 px-3 py-2 rounded-full bg-red-500/80 hover:bg-red-600 text-white backdrop-blur-sm transition-colors" title="Reset progres level ini">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     <span class="font-medium text-sm hidden sm:inline">Reset</span>
@@ -522,9 +521,10 @@
                         return; 
                     }
 
-                    if (rawWord.endsWith('[*]')) {
-                        words.push(rawWord.replace('[*]', '')); 
-                        bonusWords[words.length - 1] = true; // Gunakan index terbaru dari 'words'
+                    if (rawWord.includes('[*]')) {
+                        // PERBAIKAN UTAMA: Gunakan regex untuk menghapus semua [*] dan trim() hasilnya
+                        words.push(rawWord.replace(/\[\*\]/g, '').trim()); 
+                        bonusWords[words.length - 1] = true; 
                     } else {
                         words.push(rawWord);
                     }
