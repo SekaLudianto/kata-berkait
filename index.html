@@ -374,6 +374,9 @@
             currentLevelIndex: 0, isGameActive: false, isLevelComplete: false,
             revealedWords: [], nextSlotToGuess: -1, leaderboard: {}
         };
+        
+        // PERUBAHAN UTAMA: Flag untuk mencegah pemanggilan menang berulang
+        let isProcessingWin = false;
 
         let tiktokConnection = null;
         let lastConnectedUsername = null; 
@@ -624,6 +627,8 @@
                 tiktokStatus.textContent = 'Belum terhubung.'; tiktokStatus.classList.remove('text-red-600');
             }
             gameState.isGameActive = true;
+            // PERBAIKAN: Reset flag saat mulai game
+            isProcessingWin = false;
             loadLevel(gameState.currentLevelIndex); 
         }
 
@@ -634,6 +639,7 @@
 
             if (forceReset || gameState.revealedWords.length !== level.words.length || !gameState.isGameActive) {
                 gameState.isLevelComplete = false;
+                isProcessingWin = false; // Reset flag saat reset level
                 gameState.revealedWords = new Array(level.words.length).fill(null);
                 const slotsToOpen = level.openSlots || [0];
                 slotsToOpen.forEach(index => {
@@ -646,29 +652,41 @@
                 });
                 updateNextSlotToGuess();
             } else if (gameState.nextSlotToGuess === -1) {
-                gameState.isLevelComplete = true;
+                // Level sudah selesai sebelumnya, tampilkan modal jika belum
+                if (!gameState.isLevelComplete) {
+                     gameState.isLevelComplete = true;
+                     showWinModal();
+                }
             }
             
             if (simContainer) simContainer.classList.toggle('hidden', tiktokConnection != null && tiktokConnection.uniqueId !== null);
-            if (winModal) winModal.classList.add('hidden');
+            if (winModal && !gameState.isLevelComplete) winModal.classList.add('hidden');
             showPage('game'); renderGameUI(); saveState();
         }
         
         function updateNextSlotToGuess() {
-            // PERBAIKAN: Mencegah infinite loop/race condition saat level selesai
-            if (gameState.isLevelComplete && gameState.nextSlotToGuess === -1) return;
+            // PERBAIKAN UTAMA: Cegah eksekusi jika sedang memproses kemenangan atau level sudah selesai dan modal tampil
+            if (isProcessingWin || (gameState.isLevelComplete && winModal && !winModal.classList.contains('hidden'))) return;
 
             const nextIndex = gameState.revealedWords.indexOf(null);
             gameState.nextSlotToGuess = nextIndex;
+
             if (nextIndex === -1 && gameState.isGameActive && !gameState.isLevelComplete) {
-                gameState.isLevelComplete = true; 
-                saveState(); // Simpan state SEBELUM menampilkan modal
+                isProcessingWin = true; // Kunci proses segera
+                gameState.isLevelComplete = true;
+                saveState(); 
                 showWinModal(); 
                 confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                // Opsional: Lepas kunci setelah animasi selesai (misal 1 detik), tapi biasanya tidak perlu jika pindah level meresetnya.
+                setTimeout(() => isProcessingWin = false, 2000); 
             }
         }
         
-        function loadNextLevel() { gameState.revealedWords = []; loadLevel(gameState.currentLevelIndex + 1); }
+        function loadNextLevel() { 
+            gameState.revealedWords = []; 
+            isProcessingWin = false; // Reset flag saat pindah level
+            loadLevel(gameState.currentLevelIndex + 1); 
+        }
         function goToHome() { if (disconnectNotification) disconnectNotification.classList.add('hidden'); showPage('home'); updateHomeUI(); }
 
         // --- Koneksi TikTok & Handler (TIDAK BERUBAH) ---
