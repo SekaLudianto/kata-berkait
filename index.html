@@ -116,6 +116,16 @@
             animation: blink 1s step-end infinite;
             font-weight: bold;
         }
+
+        /* == Animasi Bonus == */
+        @keyframes bonus-pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7), inset 0 0 10px rgba(255, 255, 255, 0.5); border-color: #FFD700; }
+            50% { box-shadow: 0 0 25px rgba(255, 215, 0, 1), inset 0 0 20px rgba(255, 255, 0, 0.7); border-color: #FFFACD; }
+        }
+        .bonus-slot {
+            animation: bonus-pulse 1.5s infinite ease-in-out;
+            border-width: 3px;
+        }
     </style>
 </head>
 
@@ -215,12 +225,11 @@
                 <h2 class="font-bangers text-3xl tracking-wider drop-shadow-md">Kata Berkait</h2>
                 <div class="flex items-center justify-center gap-2">
                     <h1 id="level-title" class="text-xl font-semibold -mt-1 opacity-90">Level 1</h1>
-                    <!-- PENAMBAHAN: Tombol Reconnect Kecil di Header -->
+                    <!-- Tombol Reconnect Kecil di Header -->
                     <button id="header-reconnect-btn" data-action="manual-reconnect" class="hidden pointer-events-auto bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 animate-pulse transition-colors" title="Koneksi Terputus! Klik untuk hubungkan ulang.">
                         <i data-lucide="wifi-off" class="w-3 h-3"></i>
                         <span>Reconnect</span>
                     </button>
-                    <!-- AKHIR PENAMBAHAN -->
                 </div>
             </div>
 
@@ -296,7 +305,7 @@
 
     <!-- ============================================= --><!--     SCRIPT UTAMA                              --><!-- ============================================= --><script>
         const GH_CONFIG_KEY = 'kata-rantai-gh-config-v1';
-        const LAST_USERNAME_KEY = 'kata-rantai-last-username-v1'; // Key baru untuk simpan username
+        const LAST_USERNAME_KEY = 'kata-rantai-last-username-v1'; 
 
         let githubConfig = { OWNER: 'SekaLudianto', REPO: 'kata-berkait', PATH: 'csv', BRANCH: 'main' };
 
@@ -371,12 +380,12 @@
         const ghRepoInput = document.getElementById('gh-repo');
         const ghPathInput = document.getElementById('gh-path');
         const levelSelect = document.getElementById('level-select');
-        const headerReconnectBtn = document.getElementById('header-reconnect-btn'); // PENAMBAHAN: Selector tombol baru
+        const headerReconnectBtn = document.getElementById('header-reconnect-btn');
 
         function init() {
             setupGlobalListeners();
             loadGitHubConfig();
-            loadLastUsername(); // Muat username terakhir
+            loadLastUsername(); 
             const savedCustomData = localStorage.getItem(CUSTOM_LEVEL_DATA_KEY);
             if (savedCustomData) {
                 try { levelData = JSON.parse(savedCustomData); console.log("Data level termuat dari LocalStorage."); } 
@@ -403,7 +412,6 @@
                     case 'reset-game': if (window.confirm('Reset level ini? Progres akan hilang.')) loadLevel(gameState.currentLevelIndex, true); break;
                     case 'connect-tiktok': connectToTikTok(); break;
                     case 'manual-reconnect': 
-                        // Gunakan username dari input jika ada, atau yang terakhir disimpan
                         const userToConnect = tiktokUsername.value.trim() || lastConnectedUsername;
                         if (userToConnect) { 
                             if(disconnectReason) disconnectReason.textContent = `Menghubungkan ulang ke @${userToConnect}...`; 
@@ -442,16 +450,12 @@
             localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(githubConfig));
         }
 
-        // FUNGSI BARU: Load & Save Username Terakhir
         function loadLastUsername() {
             lastConnectedUsername = localStorage.getItem(LAST_USERNAME_KEY);
-            if (lastConnectedUsername && tiktokUsername) {
-                tiktokUsername.value = lastConnectedUsername;
-            }
+            if (lastConnectedUsername && tiktokUsername) { tiktokUsername.value = lastConnectedUsername; }
         }
         function saveLastUsername(username) {
-            lastConnectedUsername = username;
-            localStorage.setItem(LAST_USERNAME_KEY, username);
+            lastConnectedUsername = username; localStorage.setItem(LAST_USERNAME_KEY, username);
         }
 
         function handleCSVUpload(event) {
@@ -485,8 +489,24 @@
             for (let i = 1; i < lines.length; i++) {
                 const cols = lines[i].split(',');
                 if (cols.length < 10) continue; 
-                const words = cols.slice(0, 10).map(w => w.trim()).filter(w => w !== '');
-                if (words.length === 0) continue;
+                
+                const rawWords = cols.slice(0, 10).map(w => w.trim()).filter(w => w !== '');
+                if (rawWords.length === 0) continue;
+
+                // PERUBAHAN UTAMA: Deteksi dan pisahkan kata bonus
+                const words = [];
+                const bonusWords = new Array(rawWords.length).fill(false);
+
+                rawWords.forEach((rawWord, index) => {
+                    if (rawWord.endsWith('[*]')) {
+                        words.push(rawWord.replace('[*]', '')); // Hapus tanda [*] untuk kata yang ditebak
+                        bonusWords[index] = true; // Tandai sebagai bonus
+                    } else {
+                        words.push(rawWord);
+                    }
+                });
+                // ---
+
                 let clues = new Array(words.length).fill('');
                 for (let j = 1; j < words.length; j++) {
                     const clueColIndex = 11 + j; 
@@ -501,7 +521,9 @@
                 }
                 let difficulty = 'Medium';
                 for (let k = cols.length - 1; k >= 0; k--) { if (cols[k] && cols[k].trim() !== '') { difficulty = cols[k].trim(); break; } }
-                levels.push({ difficulty: difficulty, words: words, clues: clues, openSlots: [0] });
+                
+                // Masukkan bonusWords ke data level
+                levels.push({ difficulty: difficulty, words: words, clues: clues, openSlots: [0], bonusWords: bonusWords });
             }
             return levels;
         }
@@ -559,7 +581,7 @@
 
         function startOrContinueGame() {
             if (disconnectNotification) disconnectNotification.classList.add('hidden');
-            if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); // Sembunyikan tombol header reconnect saat mulai
+            if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); 
             if (tiktokStatus && tiktokStatus.textContent === 'Harap hubungkan TikTok terlebih dahulu!') { tiktokStatus.textContent = 'Belum terhubung.'; tiktokStatus.classList.remove('text-red-600'); }
             
             if (levelSelect && !levelSelect.disabled) {
@@ -622,10 +644,10 @@
             tiktokConnection.connect(uniqueId, {}).then(state => {
                 tiktokStatus.textContent = `Terhubung ke @${uniqueId}`; tiktokStatus.classList.remove('text-red-600'); tiktokStatus.classList.add('text-green-600');
                 startGameButton.disabled = false; 
-                saveLastUsername(uniqueId); // Simpan username saat berhasil konek
+                saveLastUsername(uniqueId); 
                 
                 if (disconnectNotification) disconnectNotification.classList.add('hidden'); 
-                if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); // Sembunyikan tombol reconnect header
+                if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); 
                 if (simContainer) simContainer.classList.add('hidden');
                 setupTikTokListeners();
             }).catch(errorMessage => {
@@ -643,7 +665,7 @@
             if (gameState.isGameActive) {
                 if (disconnectReason) disconnectReason.textContent = reason; 
                 if (disconnectNotification) disconnectNotification.classList.remove('hidden'); 
-                if (headerReconnectBtn) headerReconnectBtn.classList.remove('hidden'); // Tampilkan tombol header reconnect
+                if (headerReconnectBtn) headerReconnectBtn.classList.remove('hidden'); 
                 lucide.createIcons(); 
                 if (simContainer) simContainer.classList.add('hidden'); 
             }
@@ -658,7 +680,6 @@
         
         function handleComment(msg) {
             if (!gameState.isGameActive) return;
-            // Sembunyikan notif jika pesan masuk (tanda sudah terkoneksi)
             if (disconnectNotification && !disconnectNotification.classList.contains('hidden')) disconnectNotification.classList.add('hidden');
             if (headerReconnectBtn && !headerReconnectBtn.classList.contains('hidden')) headerReconnectBtn.classList.add('hidden');
 
@@ -680,14 +701,25 @@
             if (gameState.isLevelComplete) return;
             const level = levelData[gameState.currentLevelIndex];
             if (gameState.nextSlotToGuess === -1 || gameState.nextSlotToGuess >= level.words.length) return;
+            
             const correctWord = level.words[gameState.nextSlotToGuess];
             if (comment === correctWord) {
-                showCorrectToast(msg, 10); const userId = msg.uniqueId;
+                // PERUBAHAN: Cek apakah kata ini adalah kata bonus
+                const isBonus = level.bonusWords && level.bonusWords[gameState.nextSlotToGuess];
+                const points = isBonus ? 20 : 10; // Poin ganda jika bonus
+
+                showCorrectToast(msg, points, isBonus); // Kirim status bonus ke toast
+                
+                const userId = msg.uniqueId;
                 const nickname = (msg.nickname && msg.nickname.trim() !== '') ? msg.nickname : msg.uniqueId || 'Anonim';
                 const profilePic = msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)';
-                if (userId) addScore(userId, nickname, profilePic, 10);
+                
+                if (userId) addScore(userId, nickname, profilePic, points);
+                
                 gameState.revealedWords[gameState.nextSlotToGuess] = { word: correctWord, solver: { nickname, profilePic } };
-                const solvedIndex = gameState.nextSlotToGuess; updateNextSlotToGuess(); saveState();
+                const solvedIndex = gameState.nextSlotToGuess; 
+                updateNextSlotToGuess(); 
+                saveState();
                 renderSingleSlot(solvedIndex, gameState.revealedWords[solvedIndex]); 
                 if (gameState.nextSlotToGuess !== -1) renderSingleSlot(gameState.nextSlotToGuess, null); 
             } else {
@@ -709,16 +741,23 @@
         function renderSingleSlot(index, revealedData, isInitialRender = false) {
             const level = levelData[gameState.currentLevelIndex];
             const number = index + 1;
+            // Cek status bonus untuk slot ini
+            const isBonus = level.bonusWords && level.bonusWords[index];
+
             let slotElement = document.getElementById(`slot-${index}`);
             if (!slotElement && isInitialRender) { slotElement = document.createElement('div'); slotElement.id = `slot-${index}`; wordListContainer.appendChild(slotElement); }
             if (!slotElement) return;
+            
             let slotHTML = '';
             if (revealedData) {
                 const safeNickname = revealedData.solver.nickname.replace(/</g, "&lt;");
+                // Tambahkan class bonus-slot jika kata bonus sudah terjawab (opsional, agar tetap terlihat spesial)
+                const bonusClass = isBonus ? 'ring-2 ring-yellow-400' : ''; 
+                
                 slotElement.className = "flex items-center gap-3 opacity-90 pop-in";
                 slotHTML = `
                     <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-white text-slate-800 font-bold text-lg shadow-sm">${number}</span>
-                    <div class="flex-grow bg-white p-3 rounded-xl word-slot-shadow border border-slate-100">
+                    <div class="flex-grow bg-white p-3 rounded-xl word-slot-shadow border border-slate-100 ${bonusClass}">
                         <div class="flex justify-between items-center flex-wrap gap-2">
                             <span class="font-bold text-xl text-slate-800">${revealedData.word}</span>
                             <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-full">
@@ -733,10 +772,20 @@
                 let clue = level.clues[index] || 'Tebak!';
                 let clueHTML = `<span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-sm">${clue}</span>`;
                 if (difficulty === 'sulit') clueHTML = ''; 
+                
+                // PERUBAHAN: Tampilan khusus untuk slot bonus yang sedang aktif
+                let containerClass = "flex-grow flex items-center justify-between p-4 rounded-xl word-slot-shadow slot-active-box border-2 border-amber-300";
+                let bonusIcon = '';
+                if (isBonus) {
+                    containerClass += " bonus-slot"; // Tambahkan animasi bonus
+                    bonusIcon = '<i data-lucide="star" class="w-6 h-6 text-yellow-600 fill-yellow-400 animate-spin-slow absolute top-0 right-0 -mt-2 -mr-2"></i>'; // Ikon bintang
+                }
+
                 slotElement.className = "flex items-center gap-3 pop-in scale-105 transition-transform";
                 slotHTML = `
                     <span class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full font-bold text-xl slot-active shadow-lg border-2 border-amber-300">${number}</span>
-                    <div class="flex-grow flex items-center justify-between p-4 rounded-xl word-slot-shadow slot-active-box border-2 border-amber-300">
+                    <div class="${containerClass} relative">
+                        ${bonusIcon}
                         <span class="font-bold text-2xl text-amber-900 tracking-widest drop-shadow-sm">${firstLetter}<span class="blinking-cursor">_</span></span>
                         ${clueHTML}
                     </div>`;
@@ -773,8 +822,17 @@
                 </div>`).join('');
         }
 
-        function showCorrectToast(msg, points = 10) {
-            createToast(`<img src="${msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-12 h-12 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'"><div class="flex-grow overflow-hidden pr-2"><p class="font-bold text-white truncate text-shadow-sm text-lg">${(msg.nickname || msg.uniqueId || 'Anonim').replace(/</g, "&lt;")}</p><p class="text-sm text-green-100 font-medium">${correctPhrases[Math.floor(Math.random() * correctPhrases.length)]}</p></div><div class="flex-shrink-0 bg-yellow-400 text-yellow-900 font-bangers px-3 py-1 rounded-full text-xl rotate-6 shadow-md animate-bounce">+${points}</div>`, 'correct');
+        // PERUBAHAN: Parameter isBonus untuk tampilan toast spesial
+        function showCorrectToast(msg, points = 10, isBonus = false) {
+            let pointsHTML = `+${points}`;
+            let pointsClass = "bg-yellow-400 text-yellow-900";
+            
+            if (isBonus) {
+                pointsHTML = `BONUS! +${points}`;
+                pointsClass = "bg-gradient-to-r from-yellow-300 to-amber-500 text-amber-900 animate-pulse scale-110 border-2 border-white";
+            }
+
+            createToast(`<img src="${msg.profilePictureUrl || 'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-12 h-12 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'"><div class="flex-grow overflow-hidden pr-2"><p class="font-bold text-white truncate text-shadow-sm text-lg">${(msg.nickname || msg.uniqueId || 'Anonim').replace(/</g, "&lt;")}</p><p class="text-sm text-green-100 font-medium">${correctPhrases[Math.floor(Math.random() * correctPhrases.length)]}</p></div><div class="flex-shrink-0 font-bangers px-3 py-1 rounded-full text-xl rotate-6 shadow-md ${pointsClass}">${pointsHTML}</div>`, 'correct');
         }
         function showIncorrectToast(msg) {
             if (toastContainer.querySelector('.toast-incorrect')) return;
