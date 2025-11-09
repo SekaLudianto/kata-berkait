@@ -568,7 +568,11 @@
                     // Offset 11 karena kolom clue mulai setelah 10 kolom kata + 1 kolom BG Image
                     const clueColIndex = 11 + j; 
                     if (cols[clueColIndex]) {
-                        clues[j] = cols[clueColIndex].trim();
+                        const clue = cols[clueColIndex].trim();
+                        // PERBAIKAN: Hapus clue jika isinya adalah nama file gambar (bg1.jpg, dll)
+                        if (!clue.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                            clues[j] = clue;
+                        }
                     }
                 }
 
@@ -651,10 +655,16 @@
         }
         
         function updateNextSlotToGuess() {
+            // PERBAIKAN: Mencegah infinite loop/race condition saat level selesai
+            if (gameState.isLevelComplete && gameState.nextSlotToGuess === -1) return;
+
             const nextIndex = gameState.revealedWords.indexOf(null);
             gameState.nextSlotToGuess = nextIndex;
             if (nextIndex === -1 && gameState.isGameActive && !gameState.isLevelComplete) {
-                gameState.isLevelComplete = true; showWinModal(); confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                gameState.isLevelComplete = true; 
+                saveState(); // Simpan state SEBELUM menampilkan modal
+                showWinModal(); 
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             }
         }
         
@@ -801,7 +811,8 @@
                 const firstLetter = level.words[index][0];
                 const difficulty = (level.difficulty || 'Medium').toLowerCase();
                 let clue = level.clues[index] || 'Tebak!';
-                let clueHTML = `<span class="px-3 py-1 bg-white/20 text-white text-xs font-bold rounded-full backdrop-blur-sm">${clue}</span>`;
+                // PERBAIKAN: Menggunakan bg-red-600 text-white untuk kontras yang lebih baik
+                let clueHTML = `<span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-sm">${clue}</span>`;
                 if (difficulty === 'sulit') clueHTML = ''; 
 
                 slotElement.className = "flex items-center gap-3 pop-in scale-105 transition-transform";
