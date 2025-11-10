@@ -440,7 +440,7 @@
                 </p>
             </div>
             <div id="all-complete-prompt" class="hidden">
-                <p class="text-xl text-green-600 font-bold mb-4 flex items-center justify-center gap-2"><i data-lucide="party-popper" class="w-6 h-6"></i> Semua Level Selesai! <i data-lucide="party-popper" class="w-6 h-6"></i></p>
+                <p class="text-xl text-green-600 font-bold mb-4">🎉 Semua Level Selesai! 🎉</p>
                 <button data-action="go-home" class="w-full px-6 py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-transform active:scale-95">
                     Kembali ke Menu Utama
                 </button>
@@ -469,8 +469,8 @@
             <p class="text-purple-600 font-semibold mb-3 flex items-center gap-1">
                 <span class="text-sm">Mengirim</span> <span id="gift-name" class="font-bold">Hadiah</span>!
             </p>
-            <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-xl font-bold text-lg animate-bounce-slow flex items-center justify-center gap-2">
-                MAKASIH KAK! <i data-lucide="smile" class="w-5 h-5"></i>
+            <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-xl font-bold text-lg animate-bounce-slow">
+                MAKASIH KAK! 🎉
             </div>
             <p class="text-slate-500 text-sm mt-3 animate-pulse">
                 Yuk follow <span id="gift-user-follow" class="font-bold text-purple-600">@username</span>!
@@ -501,12 +501,6 @@
             </div>
         </div>
     </div>
-
-
-    <!-- ============================================= -->
-    <!--     AUDIO PLAYER (BACKGROUND MUSIC)         -->
-    <!-- ============================================= -->
-    <audio id="bg-music" src="https://raw.githubusercontent.com/SekaLudianto/kata-berkait/main/Title.mp3" loop preload="auto" hidden></audio>
 
 
     <!-- ============================================= --><!--     SCRIPT UTAMA                              --><!-- ============================================= --><script>
@@ -570,7 +564,6 @@
         let lastConnectedUsername = null; 
         let likerScrollInterval = null; 
         let gifterScrollInterval = null;
-        let backgroundMusic = null;
 
         const homeScreen = document.getElementById('home-screen');
         const puzzleScreen = document.getElementById('puzzle-screen');
@@ -627,11 +620,6 @@
 
         function init() {
             setupGlobalListeners();
-            backgroundMusic = document.getElementById('bg-music');
-            // Atur volume agar tidak terlalu keras
-            if (backgroundMusic) {
-                backgroundMusic.volume = 0.3; // 30% volume
-            }
             loadGitHubConfig();
             loadLastUsername(); 
             const savedCustomData = localStorage.getItem(CUSTOM_LEVEL_DATA_KEY);
@@ -644,31 +632,6 @@
             lucide.createIcons();
             likerScrollInterval = startAutoScroll('top-likers-list', likerScrollInterval);
             gifterScrollInterval = startAutoScroll('top-gifters-list', gifterScrollInterval);
-        }
-
-        function playBackgroundMusic() {
-            if (backgroundMusic && backgroundMusic.paused) {
-                console.log("Mencoba memutar backsound...");
-                const promise = backgroundMusic.play();
-                if (promise !== undefined) {
-                    promise.catch(error => {
-                        console.warn("Autoplay backsound diblokir oleh browser:", error);
-                        // Biarkan, user mungkin perlu klik lagi nanti
-                    }).then(() => {
-                        if (promise.status !== "fulfilled") {
-                             console.log("Backsound diputar.");
-                        }
-                    });
-                }
-            }
-        }
-
-        function stopBackgroundMusic() {
-            if (backgroundMusic && !backgroundMusic.paused) {
-                backgroundMusic.pause();
-                backgroundMusic.currentTime = 0; // Reset audio ke awal
-                console.log("Backsound dihentikan.");
-            }
         }
 
         function showPage(pageName) {
@@ -933,9 +896,6 @@
             loadLevel(gameState.currentLevelIndex, shouldReset);
             
             // --- PERBAIKAN LOGIKA SELESAI ---
-
-            // Mulai musik saat game dimulai
-            playBackgroundMusic(); 
         }
 
         function loadLevel(levelIndex, forceReset = false) {
@@ -989,9 +949,6 @@
             showPage('game'); 
             renderGameUI(); // Sekarang renderGameUI() akan punya nextSlotToGuess yang benar
             saveState();
-
-            // Pastikan musik diputar saat level dimuat (jika sudah di-interact)
-            playBackgroundMusic();
         }
         
         function updateNextSlotToGuess() {
@@ -1027,15 +984,7 @@
             }
         }
         function loadNextLevel() { gameState.revealedWords = []; isProcessingWin = false; loadLevel(gameState.currentLevelIndex + 1); }
-        function goToHome() { 
-            if (disconnectNotification) disconnectNotification.classList.add('hidden'); 
-            if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); 
-            showPage('home'); 
-            updateHomeUI(); 
-            
-            // Hentikan musik saat kembali ke menu
-            stopBackgroundMusic();
-        }
+        function goToHome() { if (disconnectNotification) disconnectNotification.classList.add('hidden'); if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); showPage('home'); updateHomeUI(); }
 
         function connectToTikTok(userToConnect = null) {
             const uniqueId = userToConnect || tiktokUsername.value.trim();
@@ -1207,14 +1156,14 @@
             topGiftersList.innerHTML = html; lucide.createIcons();
         }
 
-        function createRankItemHorizontalHTML(user, index, type) {
+         function createRankItemHorizontalHTML(user, index, type) {
              const isTop = index === 0;
              const value = type === 'like' ? user.totalLikes.toLocaleString() : user.totalDiamonds.toLocaleString();
              const colorClass = type === 'like' ? 'pink' : 'indigo';
              const crownColor = type === 'like' ? 'text-yellow-400' : 'text-indigo-300';
              
              return `<div class="flex items-center gap-1.5 bg-white/10 px-2 py-0.5 rounded-full border border-white/10 shrink-0">
-                ${isTop ? `<i data-lucide="crown" class="w-3.5 h-3.5 ${crownColor} fill-current"></i>` : `<span class="text-[10px] font-bold text-${colorClass}-300">#${index+1}</span>`}
+                ${isTop ? `<span class="${crownColor} text-sm">👑</span>` : `<span class="text-[10px] font-bold text-${colorClass}-300">#${index+1}</span>`}
                 <img src="${user.profilePictureUrl}" class="w-5 h-5 rounded-full border border-white/30" onerror="this.src='https://placehold.co/40x40/FFFFFF/000000?text=?'">
                 <span class="text-white text-[11px] font-medium truncate max-w-[80px]">${user.nickname}</span>
                 <span class="text-${colorClass}-200 text-[10px] font-bold flex items-center gap-0.5">(${value})</span>
@@ -1370,20 +1319,80 @@
             }
         }
 
-        function showWinModal() { if(winModal) { renderLeaderboard(); winModal.classList.remove('hidden'); nextLevelPrompt.classList.toggle('hidden', gameState.currentLevelIndex >= levelData.length - 1); allCompletePrompt.classList.toggle('hidden', gameState.currentLevelIndex < levelData.length - 1); lucide.createIcons(); } }
+        function renderGameUI() {
+            const level = levelData[gameState.currentLevelIndex];
+            if (levelTitle) levelTitle.textContent = `Level ${level.level}`; if (stageInfo) stageInfo.textContent = `Stage ${level.stage}`;
+            if (wordListContainer) { wordListContainer.innerHTML = ''; level.words.forEach((w, i) => renderSingleSlot(i, gameState.revealedWords[i], true)); }
+            renderTopLikers(); renderTopGifters(); lucide.createIcons();
+        }
+        
+        function renderSingleSlot(i, data, init = false) {
+            const level = levelData[gameState.currentLevelIndex];
+            let el = document.getElementById(`slot-${i}`);
+            if (!el && init) { el = document.createElement('div'); el.id = `slot-${i}`; wordListContainer.appendChild(el); }
+            if (!el) return;
+            if (data) {
+                el.className = "flex items-center gap-3 opacity-90 pop-in";
+                el.innerHTML = `<span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-white text-slate-800 font-bold text-lg shadow-sm">${i+1}</span>
+                    <div class="flex-grow bg-white p-3 rounded-xl word-slot-shadow border border-slate-100 ${level.bonusWords[i]?'ring-2 ring-yellow-400':''}">
+                        <div class="flex justify-between items-center flex-wrap gap-2"><span class="font-bold text-xl text-slate-800">${data.word}</span>
+                            <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-full"><span class="text-xs font-medium text-slate-600 truncate max-w-[100px] text-right">${data.solver.nickname.replace(/</g,"&lt;")}</span><img src="${data.solver.profilePic||'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-6 h-6 rounded-full border border-slate-200" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'"></div></div></div>`;
+            } else if (i === gameState.nextSlotToGuess) {
+                const clue = (level.difficulty||'').toLowerCase()==='sulit'?'':(level.clues[i]||'Tebak!');
+                
+                // --- LOGIKA TAMPILAN HINT BARU ---
+                const word = level.words[i];
+                let hintText = word[0]; // Selalu tampilkan huruf pertama
+                if (gameState.currentHints.length > 0) {
+                    // Tambahkan huruf petunjuk, diurutkan agar konsisten
+                    hintText += [...gameState.currentHints].sort().join('');
+                }
+                // --- LOGIKA HINT SELESAI ---
+
+                el.className = "flex items-center gap-3 pop-in scale-105 transition-transform";
+                el.innerHTML = `<span class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full font-bold text-xl slot-active shadow-lg border-2 border-amber-300">${i+1}</span>
+                    <div class="flex-grow flex items-center justify-between p-4 rounded-xl word-slot-shadow slot-active-box border-2 border-amber-300 relative ${level.bonusWords[i]?'bonus-slot':''}">
+                        ${level.bonusWords[i]?'<i data-lucide="star" class="w-6 h-6 text-yellow-600 fill-yellow-400 animate-spin-slow absolute top-0 right-0 -mt-2 -mr-2"></i>':''}
+                        
+                        <!-- GANTI TAMPILAN HINT DI SINI -->
+                        <span class="font-bold text-2xl text-amber-900 tracking-widest drop-shadow-sm">${hintText}<span class="blinking-cursor">_</span></span>
+                        
+                        ${clue?`<span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-sm">${clue}</span>`:''}</div>`;
+                
+                // --- PERBAIKAN BAGIAN 2 ---
+                // Tambahkan pengecekan 'init' di sini
+                if (init) {
+                    // Jika ini initial render, scroll ke slot ini
+                    setTimeout(() => {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100); // Kasih jeda sedikit agar DOM update
+                }
+
+            } else {
+                el.className = "flex items-center gap-3 opacity-75";
+                el.innerHTML = `<span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full font-bold text-lg slot-locked">${i+1}</span><div class="flex-grow p-3 rounded-xl word-slot-shadow slot-locked-box border border-slate-400/30"><span class="font-semibold text-lg text-slate-600">Terkunci</span></div>`;
+            }
+            if (init) lucide.createIcons(); // Pastikan ikon (seperti bintang) di-render
+            if (!data && !init) {
+                setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+                lucide.createIcons(); // Pastikan ikon di-render saat slot aktif
+            }
+        }
+
+        function showWinModal() { if(winModal) { renderLeaderboard(); winModal.classList.remove('hidden'); nextLevelPrompt.classList.toggle('hidden', gameState.currentLevelIndex >= levelData.length - 1); allCompletePrompt.classList.toggle('hidden', gameState.currentLevelIndex < levelData.length - 1); } }
         function renderLeaderboard() {
             const container = document.getElementById('leaderboard-container'); if (!container) return;
             const sorted = Object.values(gameState.leaderboard).sort((a,b)=>b.score-a.score).slice(0,10);
             container.innerHTML = sorted.length===0 ? '<p class="text-center text-slate-500 italic py-4">Belum ada data.</p>' : sorted.map((p,i)=>`
                 <div class="flex items-center gap-3 p-2.5 bg-white rounded-lg shadow-sm border border-slate-100 ${i===0?'bg-yellow-50 border-yellow-200':''}">
                     ${i===0?'':`<div class="flex-shrink-0 w-8 text-center font-bold ${i<3?'text-xl':'text-base text-slate-500'}">#${i+1}</div>`}
-                    ${i===0?`<div class="relative"><i data-lucide="crown" class="absolute -top-3 -left-2 w-6 h-6 text-yellow-400 fill-yellow-400 z-10 animate-bounce-slow" style="filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));"></i><img src="${p.profilePic}" class="w-10 h-10 rounded-full border-4 border-yellow-400 shadow-md" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'"></div>`:`<img src="${p.profilePic}" class="w-9 h-9 rounded-full border-2 border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'">`}
+                    ${i===0?`<div class="relative"><div class="absolute -top-3 -left-2 text-2xl z-10 animate-bounce-slow">👑</div><img src="${p.profilePic}" class="w-10 h-10 rounded-full border-4 border-yellow-400 shadow-md" onerror="this.src='https.placehold.co/40x40/94A3B8/FFFFFF?text=?'"></div>`:`<img src="${p.profilePic}" class="w-9 h-9 rounded-full border-2 border-slate-200 shadow-sm" onerror="this.src='https.placehold.co/40x40/94A3B8/FFFFFF?text=?'">`}
                     <div class="flex-grow overflow-hidden"><p class="font-semibold text-slate-800 truncate ${i===0?'font-bold text-amber-900':''}">${p.nickname.replace(/</g,"&lt;")}</p></div>
                     <div class="flex-shrink-0 text-right bg-blue-50 px-2 py-1 rounded-md"><p class="font-bold text-blue-600">${p.score}<span class="text-xs font-normal text-blue-400 ml-1">pt</span></p></div></div>`).join('');
         }
 
         function showCorrectToast(msg, pts, bonus) {
-            const html = `<img src="${msg.profilePictureUrl||'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-12 h-12 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'">
+            const html = `<img src="${msg.profilePictureUrl||'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-12 h-12 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https.placehold.co/40x40/4ADE80/14532D?text=:)'">
                 <div class="flex-grow overflow-hidden pr-2"><p class="font-bold text-white truncate text-shadow-sm text-lg">${(msg.nickname||'Anonim').replace(/</g,"&lt;")}</p><p class="text-sm text-green-100 font-medium">${correctPhrases[Math.floor(Math.random()*correctPhrases.length)]}</p></div>
                 <div class="flex-shrink-0 font-bangers px-3 py-1 rounded-full text-xl rotate-6 shadow-md ${bonus?'bg-gradient-to-r from-yellow-300 to-amber-500 text-amber-900 animate-pulse scale-110 border-2 border-white':'bg-yellow-400 text-yellow-900'}">${bonus?'BONUS! ':''}+${pts}</div>`;
             createToast(html, 'correct');
