@@ -489,7 +489,7 @@
             <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i data-lucide="alert-triangle" class="w-8 h-8 text-yellow-600"></i>
             </div>
-            <h2 id="confirm-title" class_DNU="text-xl font-bold text-slate-800 mb-2">Anda Yakin?</h2>
+            <h2 id="confirm-title" class="text-xl font-bold text-slate-800 mb-2">Anda Yakin?</h2>
             <p id="confirm-message" class="text-slate-600 mb-6">Apakah Anda yakin ingin melakukan aksi ini?</p>
             <div class="flex justify-center gap-3">
                 <button id="confirm-no" class="flex-1 px-4 py-3 rounded-xl bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 transition-transform active:scale-95">
@@ -557,7 +557,7 @@
         const STORAGE_KEY = 'kata-rantai-save-v1';
         const correctPhrases = ["Wih, Jagoan!", "Jenius!", "Mantap Betul!", "Gokil!", "Anjay GG!", "Luar Biasa!", "Kerja Bagus!", "Hebat!", "Cakep kek pantun!"];
         const incorrectPhrases = ["Typo ya?", "Coba Lagi!", "Betul tapi boong!", "Zonk!", "Waduh!", "Dikit Lagi!", "Hampir...!", "Bukan itu!", "Salah Woy!"];
-        let gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, isAcceptingGuesses: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: {}, topLikers: {}, topGifters: {} }; 
+        let gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, isAcceptingGuesses: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: {}, topLikers: {}, topGifters: {}, currentHints: [] }; 
         let isProcessingWin = false;
         let tiktokConnection = null;
         let lastProcessedGiftId = null; // <-- TAMBAHKAN INI
@@ -784,13 +784,6 @@
             confirmModal.classList.remove('hidden'); // Tampilkan modal
             lucide.createIcons(); // Render ikon (alert-triangle)
         }
-
-        /* BARIS-BARIS BERMASALAH DI BAWAH INI TELAH DIHAPUS:
-        
-        function handleCSVUpload(event) {
-            const file = event.target.files[0]; if (!file) return;
-        
-        */
         
         function parseCSV(csvText) {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== ''); const levels = [];
@@ -910,7 +903,8 @@
             gameState.currentLevelIndex = levelIndex; const level = levelData[levelIndex];
             if (forceReset || gameState.revealedWords.length !== level.words.length || !gameState.isGameActive) {
                 gameState.isLevelComplete = false; isProcessingWin = false; 
-                lastProcessedGiftId = null; // <-- TAMBAHKAN INI UNTUK MERESET
+                lastProcessedGiftId = null; 
+                gameState.currentHints = []; // <-- TAMBAHKAN INI (Reset petunjuk)
                 gameState.isAcceptingGuesses = false; // JANGAN terima tebakan dulu
                 gameState.revealedWords = new Array(level.words.length).fill(null);
                 (level.openSlots || [0]).forEach(index => { if (index < level.words.length) gameState.revealedWords[index] = { word: level.words[index], solver: { nickname: 'SISTEM', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } }; });
@@ -1083,6 +1077,31 @@
             gameState.topGifters[uniqueId].totalDiamonds += diamonds; gameState.topGifters[uniqueId].nickname = nickname; gameState.topGifters[uniqueId].profilePictureUrl = profilePictureUrl;
             saveTopGifters(); renderTopGifters();
 
+            // --- LOGIKA KOIN BARU ---
+            // Pastikan user ada di leaderboard
+            if (!gameState.leaderboard[uniqueId]) {
+                gameState.leaderboard[uniqueId] = { score: 0, coins: 0, nickname: nickname, profilePic: profilePictureUrl };
+            }
+            // Tambahkan koin (1 diamond = 1 koin)
+            gameState.leaderboard[uniqueId].coins = (gameState.leaderboard[uniqueId].coins || 0) + diamonds;
+            gameState.leaderboard[uniqueId].nickname = nickname; // Update nama
+            gameState.leaderboard[uniqueId].profilePic = profilePictureUrl; // Update foto
+            saveLeaderboard(); // Simpan data koin
+
+            // Tampilkan notifikasi perolehan koin (selain notifikasi gift)
+            setTimeout(() => {
+                createToast(
+                    `<i data-lucide="coins" class="w-10 h-10 text-yellow-300 flex-shrink-0"></i>
+                     <div class="flex-grow overflow-hidden">
+                         <p class="font-bold text-white truncate text-shadow-sm">${nickname.replace(/</g,"&lt;")}</p>
+                         <p class="text-sm text-yellow-100 font-medium">Mendapat +${diamonds} Koin!</p>
+                     </div>`, 
+                    'system' // Tipe 'system' (biru) agar beda dari gift
+                );
+                lucide.createIcons();
+            }, 500); // Muncul 0.5 detik setelah notif gift
+            // --- LOGIKA KOIN SELESAI ---
+
             // Tambahkan ke antrian overlay
             giftQueue.push({ nickname, profilePictureUrl, giftName, uniqueId });
             processGiftQueue();
@@ -1208,7 +1227,74 @@
             if (comment === '!RESET' && isHost) { loadLevel(gameState.currentLevelIndex, true); return; }
             
             // Pengecekan status permainan untuk menerima tebakan
-            if (!gameState.isAcceptingGuesses || gameState.isLevelComplete || gameState.nextSlotToGuess === -1) return;
+            if (!gameState.isAcceptingGuesses || gameState.isLevelComplete || gameState.nextSlotToGuess === -1) {
+                // Pengecualian untuk !HINT, biarkan lolos jika game aktif
+                if (comment !== '!HINT' || !gameState.isGameActive) {
+                    return;
+                }
+            }
+
+            // --- PERINTAH !HINT BARU ---
+            if (comment === '!HINT') {
+                const uid = msg.uniqueId;
+                const user = gameState.leaderboard[uid];
+
+                // 1. Cek koin
+                if (!user || (user.coins || 0) < 1) {
+                    // PERBAIKAN DI SINI: ganti 'comment' menjadi 'customError'
+                    showIncorrectToast({ ...msg, customError: 'Koin tidak cukup!' });
+                    return;
+                }
+
+                // 2. Cek apakah ada kata yang sedang ditebak
+                if (gameState.nextSlotToGuess === -1 || gameState.isLevelComplete) {
+                    // PERBAIKAN DI SINI: ganti 'comment' menjadi 'customError'
+                    showIncorrectToast({ ...msg, customError: 'Tidak ada kata untuk diberi petunjuk!' });
+                    return;
+                }
+
+                const correctWord = levelData[gameState.currentLevelIndex].words[gameState.nextSlotToGuess];
+                const lettersToFind = correctWord.slice(1).split(''); // Semua huruf kecuali yg pertama
+                let newHintLetter = null;
+
+                // 3. Cari huruf baru yang belum ada di 'currentHints'
+                for (const letter of lettersToFind) {
+                    if (!gameState.currentHints.includes(letter)) {
+                        newHintLetter = letter;
+                        break;
+                    }
+                }
+
+                // 4. Proses hasilnya
+                if (newHintLetter) {
+                    // Potong koin
+                    user.coins -= 1;
+                    gameState.currentHints.push(newHintLetter); // Tambah ke petunjuk
+                    saveLeaderboard(); // Simpan koin baru
+
+                    // Beri notifikasi
+                    createToast(
+                        `<img src="${msg.profilePictureUrl||'https'}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" onerror="this.src='https://placehold.co/40x40/FBBF24/78350F?text=?'">
+                         <div class="flex-grow overflow-hidden">
+                             <p class="font-bold text-white truncate">${(msg.nickname||'Anonim').replace(/</g,"&lt;")}</p>
+                             <p class="text-sm text-amber-100 font-medium">Memakai 1 Koin! Huruf '${newHintLetter}' terbuka!</p>
+                         </div>`, 
+                        'correct' // Tipe 'correct' (hijau)
+                    );
+                    
+                    // Render ulang slot aktif untuk menampilkan petunjuk baru
+                    renderSingleSlot(gameState.nextSlotToGuess, null);
+
+                } else {
+                    // Semua huruf sudah terungkap
+                    // PERBAIKAN DI SINI: ganti 'comment' menjadi 'customError'
+                    showIncorrectToast({ ...msg, customError: 'Semua petunjuk sudah terbuka!' });
+                    // Tidak perlu potong koin jika gagal
+                }
+                return; // Hentikan proses, ini adalah perintah
+            }
+            // --- PERINTAH !HINT SELESAI ---
+
 
             if (comment === '!SKIP' && isHost) {
                 const idx = gameState.nextSlotToGuess; gameState.revealedWords[idx] = { word: levelData[gameState.currentLevelIndex].words[idx], solver: { nickname: 'Host Skip', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } };
@@ -1223,6 +1309,9 @@
                 const points = isBonus ? 20 : 10; showCorrectToast(msg, points, isBonus);
                 if (msg.uniqueId) addScore(msg.uniqueId, msg.nickname || 'Anonim', msg.profilePictureUrl || '', points);
                 gameState.revealedWords[gameState.nextSlotToGuess] = { word: correct, solver: { nickname: msg.nickname || msg.uniqueId, profilePic: msg.profilePictureUrl } };
+                
+                gameState.currentHints = []; // <-- RESET PETUNJUK untuk kata berikutnya
+
                 const solvedIdx = gameState.nextSlotToGuess; updateNextSlotToGuess(); saveState();
                 renderSingleSlot(solvedIdx, gameState.revealedWords[solvedIdx]); if (gameState.nextSlotToGuess !== -1) renderSingleSlot(gameState.nextSlotToGuess, null);
             } else {
@@ -1250,14 +1339,24 @@
                             <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-full"><span class="text-xs font-medium text-slate-600 truncate max-w-[100px] text-right">${data.solver.nickname.replace(/</g,"&lt;")}</span><img src="${data.solver.profilePic||'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-6 h-6 rounded-full border border-slate-200" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'"></div></div></div>`;
             } else if (i === gameState.nextSlotToGuess) {
                 const clue = (level.difficulty||'').toLowerCase()==='sulit'?'':(level.clues[i]||'Tebak!');
-                // Jika belum menerima tebakan (sedang jeda Siap-siap), jangan tampilkan slot aktif (tapi tetap render sebagai terkunci/clue)
-                // Untuk simpelnya kita biarkan render aktif tapi tidak respon di handleComment. 
-                // ATAU kita bisa kasih visual beda. Mari kita biarkan visual aktif agar pemain bisa baca clue dulu.
+                
+                // --- LOGIKA TAMPILAN HINT BARU ---
+                const word = level.words[i];
+                let hintText = word[0]; // Selalu tampilkan huruf pertama
+                if (gameState.currentHints.length > 0) {
+                    // Tambahkan huruf petunjuk, diurutkan agar konsisten
+                    hintText += [...gameState.currentHints].sort().join('');
+                }
+                // --- LOGIKA HINT SELESAI ---
+
                 el.className = "flex items-center gap-3 pop-in scale-105 transition-transform";
                 el.innerHTML = `<span class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full font-bold text-xl slot-active shadow-lg border-2 border-amber-300">${i+1}</span>
                     <div class="flex-grow flex items-center justify-between p-4 rounded-xl word-slot-shadow slot-active-box border-2 border-amber-300 relative ${level.bonusWords[i]?'bonus-slot':''}">
                         ${level.bonusWords[i]?'<i data-lucide="star" class="w-6 h-6 text-yellow-600 fill-yellow-400 animate-spin-slow absolute top-0 right-0 -mt-2 -mr-2"></i>':''}
-                        <span class="font-bold text-2xl text-amber-900 tracking-widest drop-shadow-sm">${level.words[i][0]}<span class="blinking-cursor">_</span></span>
+                        
+                        <!-- GANTI TAMPILAN HINT DI SINI -->
+                        <span class="font-bold text-2xl text-amber-900 tracking-widest drop-shadow-sm">${hintText}<span class="blinking-cursor">_</span></span>
+                        
                         ${clue?`<span class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-sm">${clue}</span>`:''}</div>`;
                 
                 // --- PERBAIKAN BAGIAN 2 ---
@@ -1301,7 +1400,11 @@
         function showIncorrectToast(msg) {
             if (toastContainer.querySelector('.toast-incorrect')) return;
             if (simCommentInput && (!tiktokConnection || tiktokConnection.uniqueId === null)) { simCommentInput.classList.add('shake'); simCommentInput.addEventListener('animationend', () => simCommentInput.classList.remove('shake'), { once: true }); }
-            createToast(`<img src="${msg.profilePictureUrl||'https://placehold.co/40x40/EF4444/7F1D1D?text=X'}" class="w-10 h-10 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/EF4444/7F1D1D?text=X'"><div class="flex-grow overflow-hidden"><p class="font-bold text-white truncate text-shadow-sm">${(msg.nickname||'Anonim').replace(/</g,"&lt;")}</p><p class="text-sm text-red-100 font-medium">${incorrectPhrases[Math.floor(Math.random()*incorrectPhrases.length)]}</p></div>`, 'incorrect');
+            
+            // PERBAIKAN DI SINI: Cek 'customError' BUKAN 'comment'
+            const phrase = msg.customError || incorrectPhrases[Math.floor(Math.random()*incorrectPhrases.length)];
+            
+            createToast(`<img src="${msg.profilePictureUrl||'https://placehold.co/40x40/EF4444/7F1D1D?text=X'}" class="w-10 h-10 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/EF4444/7F1D1D?text=X'"><div class="flex-grow overflow-hidden"><p class="font-bold text-white truncate text-shadow-sm">${(msg.nickname||'Anonim').replace(/</g,"&lt;")}</p><p class="text-sm text-red-100 font-medium">${phrase}</p></div>`, 'incorrect');
         }
         function createToast(html, type) {
             if (!toastContainer) return;
@@ -1309,16 +1412,25 @@
             setTimeout(() => { t.classList.add('toast-out'); t.addEventListener('animationend', () => t.remove(), { once: true }); }, 2500);
         }
         function addScore(uid, nick, pic, pts) {
-            if (!gameState.leaderboard[uid]) gameState.leaderboard[uid] = { score: 0, nickname: nick, profilePic: pic };
-            gameState.leaderboard[uid].score += pts; gameState.leaderboard[uid].nickname = nick; gameState.leaderboard[uid].profilePic = pic; saveLeaderboard();
+            if (!gameState.leaderboard[uid]) {
+                // Inisialisasi user baru dengan score DAN coins
+                gameState.leaderboard[uid] = { score: 0, coins: 0, nickname: nick, profilePic: pic };
+            }
+            gameState.leaderboard[uid].score += pts; 
+            gameState.leaderboard[uid].nickname = nick; 
+            gameState.leaderboard[uid].profilePic = pic; 
+            saveLeaderboard();
         }
 
+        // --- PERBAIKAN FUNGSI DI SINI ---
         async function fetchAndUpdateLevels() {
             githubConfig.OWNER = ghUsernameInput.value.trim() || githubConfig.OWNER; githubConfig.REPO = ghRepoInput.value.trim() || githubConfig.REPO; githubConfig.PATH = ghPathInput.value.trim();
             levelUpdateStatus.textContent = `Menghubungi GitHub...`; levelUpdateStatus.className = "text-center text-sm text-slate-600 h-auto min-h-[1.25rem]";
             try {
                 const res = await fetch(`https://api.github.com/repos/${githubConfig.OWNER}/${githubConfig.REPO}/contents/${githubConfig.PATH}`);
                 if (!res.ok) throw new Error(`Gagal akses GitHub: ${res.status}`);
+                
+                // --- BAGIAN YANG HILANG DIMULAI DI SINI ---
                 const files = (await res.json()).filter(f => f.name.toLowerCase().endsWith('.csv') && f.type === 'file').sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric:true, sensitivity:'base'}));
                 if (files.length === 0) throw new Error("Tidak ada file CSV.");
                 levelUpdateStatus.textContent = `Mengunduh ${files.length} CSV...`;
@@ -1329,10 +1441,23 @@
                 levelData = allLevels; localStorage.setItem(CUSTOM_LEVEL_DATA_KEY, JSON.stringify(levelData));
                 levelUpdateStatus.textContent = `Sukses! ${levelData.length} level.`; levelUpdateStatus.className = "text-center text-sm text-green-600 h-auto min-h-[1.25rem]"; resetGameProgress();
             } catch (e) { console.error(e); levelUpdateStatus.textContent = `Gagal: ${e.message||e}`; levelUpdateStatus.className = "text-center text-sm text-red-600 h-auto min-h-[1.25rem]"; }
+            // --- BAGIAN YANG HILANG SELESAI ---
         }
 
-        function resetGameProgress() { localStorage.removeItem(STORAGE_KEY); const lb = gameState.leaderboard||{}, tl = gameState.topLikers||{}, tg = gameState.topGifters||{}; gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: lb, topLikers: tl, topGifters: tg }; loadLeaderboard(); loadTopLikers(); loadTopGifters(); updateHomeUI(); }
-        function loadLeaderboard() { try { gameState.leaderboard = JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || {}; } catch { gameState.leaderboard = {}; } }
+        function resetGameProgress() { localStorage.removeItem(STORAGE_KEY); const lb = gameState.leaderboard||{}, tl = gameState.topLikers||{}, tg = gameState.topGifters||{}; gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: lb, topLikers: tl, topGifters: tg, currentHints: [] }; loadLeaderboard(); loadTopLikers(); loadTopGifters(); updateHomeUI(); }
+        function loadLeaderboard() { 
+            try { 
+                gameState.leaderboard = JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || {}; 
+                // Migrasi data lama: pastikan semua user punya 'coins'
+                for (const uid in gameState.leaderboard) {
+                    if (gameState.leaderboard[uid].coins === undefined) {
+                        gameState.leaderboard[uid].coins = 0;
+                    }
+                }
+            } catch { 
+                gameState.leaderboard = {}; 
+            } 
+        }
         function saveLeaderboard() { localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(gameState.leaderboard)); }
         function resetLeaderboard() { gameState.leaderboard = {}; localStorage.removeItem(LEADERBOARD_KEY); renderLeaderboard(); }
         function loadTopLikers() { try { gameState.topLikers = JSON.parse(localStorage.getItem(TOP_LIKERS_KEY)) || {}; } catch { gameState.topLikers = {}; } }
