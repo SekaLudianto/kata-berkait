@@ -640,8 +640,21 @@
             });
             if (simCommentInput) simCommentInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.querySelector('[data-action="sim-send"]').click(); } });
             if (csvFileInput) csvFileInput.addEventListener('change', handleCSVUpload);
-            if (stageSelect) stageSelect.addEventListener('change', () => { populateLevelSelect(); updateHomeUI(); }); 
-            if (levelSelect) levelSelect.addEventListener('change', (e) => { gameState.currentLevelIndex = parseInt(e.target.value, 10); updateHomeUI(); });
+            
+            // PERBAIKAN: Listener stageSelect harus update gameState.currentLevelIndex
+            if (stageSelect) stageSelect.addEventListener('change', () => { 
+                populateLevelSelect(); 
+                // Tambahkan baris ini untuk update index ke level pertama di stage baru
+                if (levelSelect.value) {
+                    gameState.currentLevelIndex = parseInt(levelSelect.value, 10);
+                }
+                updateHomeUI(); 
+            }); 
+            
+            if (levelSelect) levelSelect.addEventListener('change', (e) => { 
+                gameState.currentLevelIndex = parseInt(e.target.value, 10); 
+                updateHomeUI(); 
+            });
         }
 
         function loadGitHubConfig() {
@@ -727,7 +740,18 @@
         function updateHomeUI() {
             if (!startGameButton || !gameStatus) return;
             if (!levelData || levelData.length === 0) { startGameButton.textContent = 'Data Soal Kosong'; startGameButton.disabled = true; gameStatus.textContent = 'Update dari GitHub/CSV.'; if(stageSelect) stageSelect.disabled = true; if(levelSelect) levelSelect.disabled = true; return; }
-            if (stageSelect && stageSelect.options.length <= 0) { populateStageSelect(); populateLevelSelect(); }
+            
+            // PERBAIKAN: Cek jika dropdown belum di-populate
+            // Kita cek berdasarkan value '0' ("Memuat level...") di levelSelect
+            if (levelSelect && levelSelect.options.length > 0 && levelSelect.options[0].value === '0') { 
+                populateStageSelect(); 
+                populateLevelSelect(); 
+                // Setelah populate, pastikan gameState.currentLevelIndex sesuai
+                if (levelSelect.value) {
+                    gameState.currentLevelIndex = parseInt(levelSelect.value, 10);
+                }
+            }
+
             if (gameState.currentLevelIndex >= levelData.length || gameState.currentLevelIndex < 0) gameState.currentLevelIndex = 0;
             let currentLevel = levelData[gameState.currentLevelIndex];
             if (!currentLevel) { gameState.currentLevelIndex = 0; currentLevel = levelData[0]; }
