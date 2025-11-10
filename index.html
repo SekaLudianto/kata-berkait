@@ -148,6 +148,49 @@
             mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
             -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         }
+
+        /* == Animasi Stiker ANJAY GG == */
+        @keyframes sticker-pop-elastic {
+            0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+            60% { transform: scale(1.4) rotate(10deg); opacity: 1; }
+            80% { transform: scale(0.9) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .sticker-animate {
+            animation: sticker-pop-elastic 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+        .sticker-text-stroke {
+            /* Membuat outline tebal pada teks */
+            -webkit-text-stroke: 3px black;
+            text-shadow: 5px 5px 0px rgba(0,0,0,0.8);
+        }
+        
+        /* Animasi Countdown Overlay */
+        @keyframes count-pulse {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        .count-animate {
+            animation: count-pulse 1s ease-out infinite;
+        }
+
+        /* == Animasi Gift Overlay == */
+        @keyframes gift-slide-in {
+            from { transform: translateY(-100%) scale(0.8); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes gift-slide-out {
+            from { transform: translateY(0) scale(1); opacity: 1; }
+            to { transform: translateY(-100%) scale(0.8); opacity: 0; }
+        }
+        .gift-in {
+            animation: gift-slide-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .gift-out {
+            animation: gift-slide-out 0.5s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+        }
+
     </style>
 </head>
 
@@ -401,6 +444,36 @@
         </div>
     </div>
 
+    <!-- ============================================= --><!--     OVERLAY STIKER ANJAY GG                   --><!-- ============================================= --><div id="sticker-overlay" class="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none hidden">
+        <div id="sticker-content" class="font-bangers text-8xl sm:text-9xl text-yellow-400 sticker-text-stroke rotate-[-10deg] drop-shadow-2xl">
+            ANJAY GG!
+        </div>
+    </div>
+    
+    <!-- ============================================= --><!--     OVERLAY COUNTDOWN SIAP-SIAP               --><!-- ============================================= --><div id="ready-overlay" class="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm hidden transition-opacity duration-300">
+        <div class="font-bangers text-6xl text-white drop-shadow-lg mb-4 animate-bounce">SIAP-SIAP!</div>
+        <div id="countdown-number" class="font-bangers text-8xl text-yellow-400 drop-shadow-2xl count-animate">3</div>
+    </div>
+
+    <!-- ============================================= --><!--     OVERLAY GIFT                              --><!-- ============================================= --><div id="gift-overlay" class="fixed top-24 left-1/2 -translate-x-1/2 z-[80] pointer-events-none hidden">
+        <div id="gift-card" class="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-2xl border-2 border-purple-400 flex flex-col items-center text-center min-w-[250px] transform transition-all">
+            <div class="relative mb-2">
+                <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-75 animate-pulse"></div>
+                <img id="gift-user-pic" src="" class="relative w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" onerror="this.src='https://placehold.co/80x80/A855F7/FFFFFF?text=G'">
+            </div>
+            <h3 id="gift-user-name" class="font-bold text-xl text-slate-900 mb-1 font-bangers tracking-wide">NAMA PENGIRIM</h3>
+            <p class="text-purple-600 font-semibold mb-3 flex items-center gap-1">
+                <span class="text-sm">Mengirim</span> <span id="gift-name" class="font-bold">Hadiah</span>!
+            </p>
+            <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-xl font-bold text-lg animate-bounce-slow">
+                MAKASIH KAK! 🙏
+            </div>
+            <p class="text-slate-500 text-sm mt-3 animate-pulse">
+                Yuk follow <span id="gift-user-follow" class="font-bold text-purple-600">@username</span>!
+            </p>
+        </div>
+    </div>
+
     <!-- ============================================= --><!--     TOAST CONTAINER                           --><!-- ============================================= --><div id="toast-container" class="fixed top-20 left-4 w-auto max-w-[90vw] sm:max-w-xs z-50 space-y-2 pointer-events-none"></div>
 
 
@@ -456,9 +529,9 @@
         let levelData = []; 
         const CUSTOM_LEVEL_DATA_KEY = 'kata-rantai-custom-levels-v1';
         const STORAGE_KEY = 'kata-rantai-save-v1';
-        const correctPhrases = ["Wih, Jagoan!", "Jenius!", "Mantap Betul!", "Gokil!", "Tepuk Tangan!", "Luar Biasa!", "Kerja Bagus!", "Hebat!", "Cakep!"];
-        const incorrectPhrases = ["Typo ya?", "Coba Lagi!", "Belum Pas!", "Zonk!", "Waduh!", "Dikit Lagi!", "Hampir...!", "Bukan itu!", "Salah Woy!"];
-        let gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: {}, topLikers: {}, topGifters: {} }; 
+        const correctPhrases = ["Wih, Jagoan!", "Jenius!", "Mantap Betul!", "Gokil!", "Anjay GG!", "Luar Biasa!", "Kerja Bagus!", "Hebat!", "Cakep kek pantun!"];
+        const incorrectPhrases = ["Typo ya?", "Coba Lagi!", "Betul tapi boong!", "Zonk!", "Waduh!", "Dikit Lagi!", "Hampir...!", "Bukan itu!", "Salah Woy!"];
+        let gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, isAcceptingGuesses: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: {}, topLikers: {}, topGifters: {} }; 
         let isProcessingWin = false;
         let tiktokConnection = null;
         let lastConnectedUsername = null; 
@@ -496,6 +569,19 @@
         const headerReconnectBtn = document.getElementById('header-reconnect-btn');
         const topLikersList = document.getElementById('top-likers-list'); 
         const topGiftersList = document.getElementById('top-gifters-list');
+        const stickerOverlay = document.getElementById('sticker-overlay');
+        const stickerContent = document.getElementById('sticker-content');
+        const readyOverlay = document.getElementById('ready-overlay');
+        const countdownNumberEl = document.getElementById('countdown-number');
+        const giftOverlay = document.getElementById('gift-overlay');
+        const giftCard = document.getElementById('gift-card');
+        const giftUserPic = document.getElementById('gift-user-pic');
+        const giftUserName = document.getElementById('gift-user-name');
+        const giftNameEl = document.getElementById('gift-name');
+        const giftUserFollow = document.getElementById('gift-user-follow');
+
+        let giftQueue = [];
+        let isGiftOverlayShowing = false;
 
         function init() {
             setupGlobalListeners();
@@ -538,7 +624,7 @@
                         break;
                     case 'sim-send': if (simCommentInput && simCommentInput.value.trim()) { handleComment({ comment: simCommentInput.value.trim(), uniqueId: 'simulator_user_id', nickname: 'Pemain Simulasi', profilePictureUrl: 'https://placehold.co/40x40/0284C7/FFFFFF?text=S' }); simCommentInput.value = ''; } break;
                     case 'sim-like': handleLike({ uniqueId: 'sim_liker_' + Math.floor(Math.random()*5), nickname: 'Liker ' + Math.floor(Math.random()*5), profilePictureUrl: 'https://placehold.co/40x40/EC4899/FFFFFF?text=L', likeCount: Math.floor(Math.random() * 20) + 5 }); break;
-                    case 'sim-gift': handleGift({ uniqueId: 'sim_gifter_' + Math.floor(Math.random()*5), nickname: 'Sultan ' + Math.floor(Math.random()*5), profilePictureUrl: 'https://placehold.co/40x40/A855F7/FFFFFF?text=G', diamondCount: Math.floor(Math.random() * 50) + 1 }); break;
+                    case 'sim-gift': handleGift({ uniqueId: 'sim_gifter_' + Math.floor(Math.random()*5), nickname: 'Sultan ' + Math.floor(Math.random()*5), profilePictureUrl: 'https://placehold.co/40x40/A855F7/FFFFFF?text=G', diamondCount: Math.floor(Math.random() * 50) + 1, giftName: 'Mawar' }); break;
                     case 'update-levels': fetchAndUpdateLevels(); break;
                     case 'import-csv': if (csvFileInput) csvFileInput.click(); break;
                     case 'toggle-settings': settingsPanel.classList.toggle('hidden'); settingsChevron.classList.toggle('rotate-180'); break;
@@ -665,9 +751,39 @@
             if (levelIndex >= levelData.length) levelIndex = 0;
             gameState.currentLevelIndex = levelIndex; const level = levelData[levelIndex];
             if (forceReset || gameState.revealedWords.length !== level.words.length || !gameState.isGameActive) {
-                gameState.isLevelComplete = false; isProcessingWin = false; gameState.revealedWords = new Array(level.words.length).fill(null);
+                gameState.isLevelComplete = false; isProcessingWin = false; 
+                gameState.isAcceptingGuesses = false; // JANGAN terima tebakan dulu
+                gameState.revealedWords = new Array(level.words.length).fill(null);
                 (level.openSlots || [0]).forEach(index => { if (index < level.words.length) gameState.revealedWords[index] = { word: level.words[index], solver: { nickname: 'SISTEM', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } }; });
-                updateNextSlotToGuess();
+                
+                // Tampilkan overlay Siap-siap dengan hitung mundur
+                readyOverlay.classList.remove('hidden');
+                let count = 3;
+                countdownNumberEl.textContent = count;
+                
+                // Reset animasi agar bisa diputar ulang setiap detik
+                countdownNumberEl.classList.remove('count-animate');
+                void countdownNumberEl.offsetWidth; // Trigger reflow
+                countdownNumberEl.classList.add('count-animate');
+
+                const countdownInterval = setInterval(() => {
+                    count--;
+                    if (count > 0) {
+                        countdownNumberEl.textContent = count;
+                        // Reset animasi untuk setiap angka baru
+                        countdownNumberEl.classList.remove('count-animate');
+                        void countdownNumberEl.offsetWidth; // Trigger reflow
+                        countdownNumberEl.classList.add('count-animate');
+                    } else {
+                        clearInterval(countdownInterval);
+                        readyOverlay.classList.add('hidden');
+                        if (gameState.isGameActive) {
+                            gameState.isAcceptingGuesses = true; // BARU terima tebakan
+                            updateNextSlotToGuess();
+                        }
+                    }
+                }, 1000);
+
             } else if (gameState.nextSlotToGuess === -1 && !gameState.isLevelComplete) { gameState.isLevelComplete = true; showWinModal(); }
             if (simContainer) simContainer.classList.toggle('hidden', tiktokConnection != null && tiktokConnection.uniqueId !== null);
             if (winModal && !gameState.isLevelComplete) winModal.classList.add('hidden');
@@ -677,8 +793,33 @@
         function updateNextSlotToGuess() {
             if (isProcessingWin || (gameState.isLevelComplete && winModal && !winModal.classList.contains('hidden'))) return;
             const nextIndex = gameState.revealedWords.findIndex(word => word === null); gameState.nextSlotToGuess = nextIndex;
+            
+            // Jika level selesai (semua kata tertebak)
             if (nextIndex === -1 && gameState.isGameActive && !gameState.isLevelComplete) {
-                isProcessingWin = true; gameState.isLevelComplete = true; saveState(); showWinModal(); confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); setTimeout(() => isProcessingWin = false, 2000); 
+                gameState.isLevelComplete = true; isProcessingWin = true; 
+                gameState.isAcceptingGuesses = false; // Stop terima tebakan saat menang
+                saveState();
+
+                // SEQUENCE MENANG BARU:
+                // 1. Jeda 2 detik agar pemain bisa lihat semua jawaban
+                setTimeout(() => {
+                    if (!gameState.isGameActive) return; // Cegah jika user keluar saat jeda
+                    
+                    // 2. Tampilkan Stiker ANJAY GG
+                    stickerOverlay.classList.remove('hidden');
+                    stickerContent.classList.add('sticker-animate');
+                    // Confetti lagi saat stiker muncul biar heboh
+                    confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 }, scalar: 1.2 });
+
+                    // 3. Jeda 3 detik lagi untuk durasi stiker, baru tampilkan modal menang
+                    setTimeout(() => {
+                        stickerOverlay.classList.add('hidden');
+                        stickerContent.classList.remove('sticker-animate');
+                        showWinModal();
+                        isProcessingWin = false; 
+                    }, 3000);
+
+                }, 2000);
             }
         }
         function loadNextLevel() { gameState.revealedWords = []; isProcessingWin = false; loadLevel(gameState.currentLevelIndex + 1); }
@@ -721,12 +862,51 @@
 
         function handleGift(data) {
             if (!gameState.isGameActive) return;
-            // Gunakan diamondCount jika ada (nilai gift), jika tidak ada gunakan 1 sebagai fallback (misal gift kecil tak ternilai)
+            
+            // Proses data gift
             const diamonds = data.diamondCount || (data.extendedGiftInfo ? data.extendedGiftInfo.diamond_count : 0) || 1;
+            const giftName = data.giftName || 'Hadiah';
             const { uniqueId, nickname, profilePictureUrl } = data;
+            
+            // Update Top Gifters
              if (!gameState.topGifters[uniqueId]) gameState.topGifters[uniqueId] = { totalDiamonds: 0, nickname, profilePictureUrl };
             gameState.topGifters[uniqueId].totalDiamonds += diamonds; gameState.topGifters[uniqueId].nickname = nickname; gameState.topGifters[uniqueId].profilePictureUrl = profilePictureUrl;
             saveTopGifters(); renderTopGifters();
+
+            // Tambahkan ke antrian overlay
+            giftQueue.push({ nickname, profilePictureUrl, giftName, uniqueId });
+            processGiftQueue();
+        }
+
+        function processGiftQueue() {
+            if (isGiftOverlayShowing || giftQueue.length === 0) return;
+            isGiftOverlayShowing = true;
+            const giftData = giftQueue.shift();
+            
+            // Update konten overlay
+            giftUserPic.src = giftData.profilePictureUrl;
+            giftUserName.textContent = giftData.nickname;
+            giftNameEl.textContent = giftData.giftName;
+            giftUserFollow.textContent = `@${giftData.uniqueId}`;
+            
+            // Tampilkan overlay
+            giftOverlay.classList.remove('hidden');
+            giftCard.classList.remove('gift-out');
+            giftCard.classList.add('gift-in');
+            
+            // Confetti khusus gift
+            confetti({ particleCount: 150, spread: 100, origin: { y: 0.3 }, colors: ['#A855F7', '#EC4899', '#FBBF24'] });
+
+            // Sembunyikan setelah beberapa detik
+            setTimeout(() => {
+                giftCard.classList.remove('gift-in');
+                giftCard.classList.add('gift-out');
+                setTimeout(() => {
+                    giftOverlay.classList.add('hidden');
+                    isGiftOverlayShowing = false;
+                    processGiftQueue(); // Proses gift berikutnya di antrian
+                }, 500); // Waktu tunggu animasi keluar selesai
+            }, 4000); // Durasi overlay tampil
         }
 
         function renderTopLikers() {
@@ -789,16 +969,21 @@
             console.log("Chat:", msg.comment);
             const comment = msg.comment.trim().toUpperCase().replace(/\s+/g, '');
             const isHost = tiktokConnection && msg.uniqueId && tiktokUsername.value.replace(/^@/, '').toLowerCase() === msg.uniqueId.toLowerCase() || msg.uniqueId === 'simulator_user_id';
+            
+            // Command host selalu bisa dijalankan
             if (gameState.isLevelComplete && comment === '!NEXT') { loadNextLevel(); return; }
             if (comment === '!RESET' && isHost) { loadLevel(gameState.currentLevelIndex, true); return; }
+            
+            // Pengecekan status permainan untuk menerima tebakan
+            if (!gameState.isAcceptingGuesses || gameState.isLevelComplete || gameState.nextSlotToGuess === -1) return;
+
             if (comment === '!SKIP' && isHost) {
-                if (gameState.isLevelComplete || gameState.nextSlotToGuess === -1) return;
                 const idx = gameState.nextSlotToGuess; gameState.revealedWords[idx] = { word: levelData[gameState.currentLevelIndex].words[idx], solver: { nickname: 'Host Skip', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } };
                 createToast(`<div class="flex-grow"><p class="font-bold text-white">Host</p><p class="text-sm text-blue-100">Skip kata!</p></div>`, 'system');
                 updateNextSlotToGuess(); saveState(); renderSingleSlot(idx, gameState.revealedWords[idx]); if (gameState.nextSlotToGuess !== -1) renderSingleSlot(gameState.nextSlotToGuess, null);
                 return;
             }
-            if (gameState.isLevelComplete || gameState.nextSlotToGuess === -1) return;
+            
             const correct = levelData[gameState.currentLevelIndex].words[gameState.nextSlotToGuess];
             if (comment === correct) {
                 const isBonus = levelData[gameState.currentLevelIndex].bonusWords[gameState.nextSlotToGuess];
@@ -832,6 +1017,9 @@
                             <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-full"><span class="text-xs font-medium text-slate-600 truncate max-w-[100px] text-right">${data.solver.nickname.replace(/</g,"&lt;")}</span><img src="${data.solver.profilePic||'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-6 h-6 rounded-full border border-slate-200" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'"></div></div></div>`;
             } else if (i === gameState.nextSlotToGuess) {
                 const clue = (level.difficulty||'').toLowerCase()==='sulit'?'':(level.clues[i]||'Tebak!');
+                // Jika belum menerima tebakan (sedang jeda Siap-siap), jangan tampilkan slot aktif (tapi tetap render sebagai terkunci/clue)
+                // Untuk simpelnya kita biarkan render aktif tapi tidak respon di handleComment. 
+                // ATAU kita bisa kasih visual beda. Mari kita biarkan visual aktif agar pemain bisa baca clue dulu.
                 el.className = "flex items-center gap-3 pop-in scale-105 transition-transform";
                 el.innerHTML = `<span class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full font-bold text-xl slot-active shadow-lg border-2 border-amber-300">${i+1}</span>
                     <div class="flex-grow flex items-center justify-between p-4 rounded-xl word-slot-shadow slot-active-box border-2 border-amber-300 relative ${level.bonusWords[i]?'bonus-slot':''}">
