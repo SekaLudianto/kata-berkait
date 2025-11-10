@@ -354,9 +354,9 @@
                     <div>
                         <h3 class="font-bold">Koneksi Terputus!</h3>
                         <p id="disconnect-reason" class="text-sm opacity-90">Menunggu koneksi kembali...</p>
-                        <!-- PERUBAHAN DI SINI -->
+                        <!-- PERUBAHAN DI SINI: Menghapus referensi !konek -->
                         <p class="text-sm font-medium text-white/90 mt-1">
-                            Klik "Coba Lagi" atau ketik <code class="bg-black/50 px-1.5 py-0.5 rounded font-bold">!konek</code>
+                            Silakan klik tombol "Coba Lagi" untuk menyambung ulang.
                         </p>
                     </div>
                 </div>
@@ -481,6 +481,28 @@
     <!-- ============================================= --><!--     TOAST CONTAINER                           --><!-- ============================================= --><div id="toast-container" class="fixed top-20 left-4 w-auto max-w-[90vw] sm:max-w-xs z-50 space-y-2 pointer-events-none"></div>
 
 
+    <!-- ============================================= -->
+    <!--     MODAL KONFIRMASI (PENGGANTI ALERT)        -->
+    <!-- ============================================= -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/80 z-[90] flex items-center justify-center p-4 hidden backdrop-blur-sm transition-opacity duration-300">
+        <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 text-center transform pop-in">
+            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="alert-triangle" class="w-8 h-8 text-yellow-600"></i>
+            </div>
+            <h2 id="confirm-title" class_DNU="text-xl font-bold text-slate-800 mb-2">Anda Yakin?</h2>
+            <p id="confirm-message" class="text-slate-600 mb-6">Apakah Anda yakin ingin melakukan aksi ini?</p>
+            <div class="flex justify-center gap-3">
+                <button id="confirm-no" class="flex-1 px-4 py-3 rounded-xl bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 transition-transform active:scale-95">
+                    Batal
+                </button>
+                <button id="confirm-yes" class="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-transform active:scale-95">
+                    Ya, Lanjutkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ============================================= --><!--     SCRIPT UTAMA                              --><!-- ============================================= --><script>
         const GH_CONFIG_KEY = 'kata-rantai-gh-config-v1';
         const LAST_USERNAME_KEY = 'kata-rantai-last-username-v1'; 
@@ -538,6 +560,7 @@
         let gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, isAcceptingGuesses: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: {}, topLikers: {}, topGifters: {} }; 
         let isProcessingWin = false;
         let tiktokConnection = null;
+        let lastProcessedGiftId = null; // <-- TAMBAHKAN INI
         let lastConnectedUsername = null; 
         let likerScrollInterval = null; 
         let gifterScrollInterval = null;
@@ -584,6 +607,14 @@
         const giftNameEl = document.getElementById('gift-name');
         const giftUserFollow = document.getElementById('gift-user-follow');
 
+        // Variabel untuk modal konfirmasi
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmTitle = document.getElementById('confirm-title');
+        const confirmMessage = document.getElementById('confirm-message');
+        const confirmYes = document.getElementById('confirm-yes');
+        const confirmNo = document.getElementById('confirm-no');
+        let onConfirmCallback = null; // Untuk menyimpan aksi saat "Ya" diklik
+
         let giftQueue = [];
         let isGiftOverlayShowing = false;
 
@@ -616,11 +647,26 @@
                 switch (action) {
                     case 'start-game': startOrContinueGame(); break;
                     case 'end-session': 
-                        if (window.confirm('Akhiri sesi saat ini?')) { gameState.isGameActive = false; saveState(); updateHomeUI(); }
+                        // Ganti window.confirm
+                        showConfirm('Akhiri sesi saat ini?', () => { 
+                            gameState.isGameActive = false; 
+                            saveState(); 
+                            updateHomeUI(); 
+                        });
                         break;
                     case 'go-home': goToHome(); break;
-                    case 'reset-game': if (window.confirm('Reset level ini?')) loadLevel(gameState.currentLevelIndex, true); break;
-                    case 'skip-level': if (window.confirm('Lewati level ini?')) loadNextLevel(); break;
+                    case 'reset-game': 
+                        // Ganti window.confirm
+                        showConfirm('Reset progres level ini?', () => {
+                            loadLevel(gameState.currentLevelIndex, true);
+                        });
+                        break;
+                    case 'skip-level': 
+                        // Ganti window.confirm
+                        showConfirm('Lewati level ini?', () => {
+                            loadNextLevel();
+                        });
+                        break;
                     case 'connect-tiktok': connectToTikTok(); break;
                     case 'manual-reconnect': 
                         const userToConnect = tiktokUsername.value.trim() || lastConnectedUsername;
@@ -632,10 +678,32 @@
                     case 'update-levels': fetchAndUpdateLevels(); break;
                     case 'import-csv': if (csvFileInput) csvFileInput.click(); break;
                     case 'toggle-settings': settingsPanel.classList.toggle('hidden'); settingsChevron.classList.toggle('rotate-180'); break;
-                    case 'save-gh-config': saveGitHubConfig(); alert('Konfigurasi tersimpan!'); break;
-                    case 'reset-leaderboard': if (window.confirm('Reset Papan Peringkat?')) { resetLeaderboard(); alert('Direset.'); } break;
-                    case 'reset-top-likers': if (window.confirm('Reset Top Likers?')) { resetTopLikers(); alert('Direset.'); } break;
-                    case 'reset-top-gifters': if (window.confirm('Reset Top Gifters?')) { resetTopGifters(); alert('Direset.'); } break;
+                    case 'save-gh-config': 
+                        saveGitHubConfig(); 
+                        // Ganti alert() dengan toast
+                        createToast('<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-blue-100">Konfigurasi tersimpan!</p></div>', 'system');
+                        break;
+                    case 'reset-leaderboard': 
+                        // Ganti window.confirm dan alert
+                        showConfirm('Reset Papan Peringkat? Semua skor akan hilang.', () => { 
+                            resetLeaderboard(); 
+                            createToast('<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-blue-100">Papan Peringkat Direset!</p></div>', 'system');
+                        }, 'Reset Skor?');
+                        break;
+                    case 'reset-top-likers': 
+                        // Ganti window.confirm dan alert
+                        showConfirm('Reset Top Likers?', () => { 
+                            resetTopLikers(); 
+                            createToast('<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-blue-100">Top Likers Direset!</p></div>', 'system');
+                        });
+                        break;
+                    case 'reset-top-gifters': 
+                        // Ganti window.confirm dan alert
+                        showConfirm('Reset Top Gifters?', () => { 
+                            resetTopGifters(); 
+                            createToast('<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-blue-100">Top Gifters Direset!</p></div>', 'system');
+                        });
+                        break;
                 }
             });
             if (simCommentInput) simCommentInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.querySelector('[data-action="sim-send"]').click(); } });
@@ -655,6 +723,23 @@
                 gameState.currentLevelIndex = parseInt(e.target.value, 10); 
                 updateHomeUI(); 
             });
+            
+            // Listener untuk tombol modal konfirmasi
+            if (confirmYes) {
+                confirmYes.addEventListener('click', () => {
+                    if (onConfirmCallback) {
+                        onConfirmCallback(); // Jalankan aksi yang disimpan
+                    }
+                    onConfirmCallback = null; // Bersihkan callback
+                    confirmModal.classList.add('hidden'); // Tutup modal
+                });
+            }
+            if (confirmNo) {
+                confirmNo.addEventListener('click', () => {
+                    onConfirmCallback = null; // Bersihkan callback
+                    confirmModal.classList.add('hidden'); // Tutup modal
+                });
+            }
         }
 
         function loadGitHubConfig() {
@@ -688,6 +773,25 @@
             reader.readAsText(file);
         }
 
+        // Fungsi baru untuk menampilkan modal konfirmasi
+        function showConfirm(message, callback, title = 'Anda Yakin?') {
+            if (!confirmModal || !confirmMessage || !confirmTitle) return;
+            
+            confirmTitle.textContent = title;
+            confirmMessage.textContent = message;
+            onConfirmCallback = callback; // Simpan fungsi callback
+            
+            confirmModal.classList.remove('hidden'); // Tampilkan modal
+            lucide.createIcons(); // Render ikon (alert-triangle)
+        }
+
+        /* BARIS-BARIS BERMASALAH DI BAWAH INI TELAH DIHAPUS:
+        
+        function handleCSVUpload(event) {
+            const file = event.target.files[0]; if (!file) return;
+        
+        */
+        
         function parseCSV(csvText) {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== ''); const levels = [];
             for (let i = 1; i < lines.length; i++) {
@@ -806,6 +910,7 @@
             gameState.currentLevelIndex = levelIndex; const level = levelData[levelIndex];
             if (forceReset || gameState.revealedWords.length !== level.words.length || !gameState.isGameActive) {
                 gameState.isLevelComplete = false; isProcessingWin = false; 
+                lastProcessedGiftId = null; // <-- TAMBAHKAN INI UNTUK MERESET
                 gameState.isAcceptingGuesses = false; // JANGAN terima tebakan dulu
                 gameState.revealedWords = new Array(level.words.length).fill(null);
                 (level.openSlots || [0]).forEach(index => { if (index < level.words.length) gameState.revealedWords[index] = { word: level.words[index], solver: { nickname: 'SISTEM', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } }; });
@@ -951,6 +1056,23 @@
         function handleGift(data) {
             if (!gameState.isGameActive) return;
             
+            // --- TAMBAHKAN LOGIKA DEBOUNCE ---
+            // Cek ID unik dari event gift. 'giftId' atau 'msg_id' adalah properti yg umum.
+            const currentGiftId = data.giftId || data.msg_id || data.id;
+
+            // Jika gift ini punya ID dan ID-nya SAMA dengan yang baru saja diproses,
+            // abaikan event duplikat ini.
+            if (currentGiftId && currentGiftId === lastProcessedGiftId) {
+                console.warn(`Mengabaikan event gift duplikat: ${currentGiftId}`);
+                return; // Hentikan eksekusi
+            }
+
+            // Jika ini gift baru, simpan ID-nya
+            if (currentGiftId) {
+                lastProcessedGiftId = currentGiftId;
+            }
+            // --- LOGIKA DEBOUNCE SELESAI ---
+
             // Proses data gift
             const diamonds = data.diamondCount || (data.extendedGiftInfo ? data.extendedGiftInfo.diamond_count : 0) || 1;
             const giftName = data.giftName || 'Hadiah';
@@ -1066,7 +1188,8 @@
             const isHost = (tiktokConnection && msg.uniqueId && tiktokConnection.uniqueId && msg.uniqueId.toLowerCase() === tiktokConnection.uniqueId.toLowerCase()) || 
                          (msg.uniqueId === 'simulator_user_id');
             
-            // Perintah !konek dari host untuk memicu koneksi ulang
+            // PERUBAHAN DI SINI: Menghapus logika !konek yang tidak berfungsi
+            /* // Perintah !konek dari host untuk memicu koneksi ulang
             if (comment === '!KONEK' && isHost) {
                 const userToConnect = tiktokUsername.value.trim() || lastConnectedUsername;
                 if (userToConnect) {
@@ -1076,6 +1199,7 @@
                 }
                 return; // Hentikan proses comment lebih lanjut
             }
+            */
 
             if (!gameState.isGameActive) return;
 
