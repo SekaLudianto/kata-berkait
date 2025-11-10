@@ -771,8 +771,34 @@
         function startOrContinueGame() {
             if (disconnectNotification) disconnectNotification.classList.add('hidden'); if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); 
             if (tiktokStatus && tiktokStatus.textContent.includes('Harap hubungkan')) { tiktokStatus.textContent = 'Belum terhubung.'; tiktokStatus.classList.remove('text-red-600'); }
-            if (levelSelect && !levelSelect.disabled && parseInt(levelSelect.value, 10) !== gameState.currentLevelIndex) { gameState.currentLevelIndex = parseInt(levelSelect.value, 10); gameState.isGameActive = false; }
-            gameState.isGameActive = true; isProcessingWin = false; loadLevel(gameState.currentLevelIndex); 
+            
+            // --- PERBAIKAN LOGIKA DIMULAI DI SINI ---
+
+            // Tentukan apakah level ini harus di-reset (forceReset)
+            let shouldReset = false;
+
+            // Cek jika dropdown level sedang aktif (artinya kita di menu utama)
+            if (levelSelect && !levelSelect.disabled) {
+                const selectedLevelIndex = parseInt(levelSelect.value, 10);
+                
+                // Jika level yang dipilih di dropdown berbeda dengan yang disimpan,
+                // ATAU jika game-nya memang tidak aktif (ini adalah klik "MULAI GAME!", bkn "LANJUT")
+                // maka kita harus me-reset progres.
+                if (selectedLevelIndex !== gameState.currentLevelIndex || !gameState.isGameActive) {
+                    gameState.currentLevelIndex = selectedLevelIndex;
+                    shouldReset = true; // Tandai untuk reset!
+                }
+            }
+            // Jika dropdown nonaktif, berarti ini adalah klik "LANJUT",
+            // jadi shouldReset akan tetap 'false' dan game akan lanjut.
+
+            gameState.isGameActive = true; // Tetapkan game sebagai aktif
+            isProcessingWin = false;
+            
+            // Kirim 'shouldReset' ke parameter 'forceReset' di loadLevel()
+            loadLevel(gameState.currentLevelIndex, shouldReset);
+            
+            // --- PERBAIKAN LOGIKA SELESAI ---
         }
 
         function loadLevel(levelIndex, forceReset = false) {
