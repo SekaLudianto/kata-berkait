@@ -440,7 +440,7 @@
                 </p>
             </div>
             <div id="all-complete-prompt" class="hidden">
-                <p class="text-xl text-green-600 font-bold mb-4">🎉 Semua Level Selesai! 🎉</p>
+                <p class="text-xl text-green-600 font-bold mb-4">脂 Semua Level Selesai! 脂</p>
                 <button data-action="go-home" class="w-full px-6 py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-transform active:scale-95">
                     Kembali ke Menu Utama
                 </button>
@@ -470,7 +470,7 @@
                 <span class="text-sm">Mengirim</span> <span id="gift-name" class="font-bold">Hadiah</span>!
             </p>
             <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-xl font-bold text-lg animate-bounce-slow">
-                MAKASIH KAK! 🎉
+                MAKASIH KAK! 脂
             </div>
             <p class="text-slate-500 text-sm mt-3 animate-pulse">
                 Yuk follow <span id="gift-user-follow" class="font-bold text-purple-600">@username</span>!
@@ -501,6 +501,12 @@
             </div>
         </div>
     </div>
+
+
+    <!-- ============================================= -->
+    <!--     AUDIO PLAYER (BACKGROUND MUSIC)         -->
+    <!-- ============================================= -->
+    <audio id="bg-music" src="https://raw.githubusercontent.com/SekaLudianto/kata-berkait/main/Title.mp3" loop preload="auto" hidden></audio>
 
 
     <!-- ============================================= --><!--     SCRIPT UTAMA                              --><!-- ============================================= --><script>
@@ -564,6 +570,7 @@
         let lastConnectedUsername = null; 
         let likerScrollInterval = null; 
         let gifterScrollInterval = null;
+        let backgroundMusic = null;
 
         const homeScreen = document.getElementById('home-screen');
         const puzzleScreen = document.getElementById('puzzle-screen');
@@ -620,6 +627,11 @@
 
         function init() {
             setupGlobalListeners();
+            backgroundMusic = document.getElementById('bg-music');
+            // Atur volume agar tidak terlalu keras
+            if (backgroundMusic) {
+                backgroundMusic.volume = 0.3; // 30% volume
+            }
             loadGitHubConfig();
             loadLastUsername(); 
             const savedCustomData = localStorage.getItem(CUSTOM_LEVEL_DATA_KEY);
@@ -632,6 +644,31 @@
             lucide.createIcons();
             likerScrollInterval = startAutoScroll('top-likers-list', likerScrollInterval);
             gifterScrollInterval = startAutoScroll('top-gifters-list', gifterScrollInterval);
+        }
+
+        function playBackgroundMusic() {
+            if (backgroundMusic && backgroundMusic.paused) {
+                console.log("Mencoba memutar backsound...");
+                const promise = backgroundMusic.play();
+                if (promise !== undefined) {
+                    promise.catch(error => {
+                        console.warn("Autoplay backsound diblokir oleh browser:", error);
+                        // Biarkan, user mungkin perlu klik lagi nanti
+                    }).then(() => {
+                        if (promise.status !== "fulfilled") {
+                             console.log("Backsound diputar.");
+                        }
+                    });
+                }
+            }
+        }
+
+        function stopBackgroundMusic() {
+            if (backgroundMusic && !backgroundMusic.paused) {
+                backgroundMusic.pause();
+                backgroundMusic.currentTime = 0; // Reset audio ke awal
+                console.log("Backsound dihentikan.");
+            }
         }
 
         function showPage(pageName) {
@@ -896,6 +933,9 @@
             loadLevel(gameState.currentLevelIndex, shouldReset);
             
             // --- PERBAIKAN LOGIKA SELESAI ---
+
+            // Mulai musik saat game dimulai
+            playBackgroundMusic(); 
         }
 
         function loadLevel(levelIndex, forceReset = false) {
@@ -949,6 +989,9 @@
             showPage('game'); 
             renderGameUI(); // Sekarang renderGameUI() akan punya nextSlotToGuess yang benar
             saveState();
+
+            // Pastikan musik diputar saat level dimuat (jika sudah di-interact)
+            playBackgroundMusic();
         }
         
         function updateNextSlotToGuess() {
@@ -984,7 +1027,15 @@
             }
         }
         function loadNextLevel() { gameState.revealedWords = []; isProcessingWin = false; loadLevel(gameState.currentLevelIndex + 1); }
-        function goToHome() { if (disconnectNotification) disconnectNotification.classList.add('hidden'); if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); showPage('home'); updateHomeUI(); }
+        function goToHome() { 
+            if (disconnectNotification) disconnectNotification.classList.add('hidden'); 
+            if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); 
+            showPage('home'); 
+            updateHomeUI(); 
+            
+            // Hentikan musik saat kembali ke menu
+            stopBackgroundMusic();
+        }
 
         function connectToTikTok(userToConnect = null) {
             const uniqueId = userToConnect || tiktokUsername.value.trim();
@@ -1140,7 +1191,7 @@
 
         function renderTopLikers() {
             if (!topLikersList) return;
-            const sorted = Object.values(gameState.topLikers).sort((a, b) => b.totalLikes - a.totalLikes);
+            const sorted = Object.values(gameState.topLikers).sort((a, b) => b.totalLikes - a.totalLikes).slice(0, 10);
             if (sorted.length === 0) { topLikersList.innerHTML = '<p class="text-white/50 text-[10px] italic">Belum ada like...</p>'; return; }
             let html = sorted.map((liker, i) => createRankItemHorizontalHTML(liker, i, 'like')).join('');
             // Duplicate for smoother infinite scroll if needed, but standard scroll is okay for now.
@@ -1150,7 +1201,7 @@
 
         function renderTopGifters() {
             if (!topGiftersList) return;
-            const sorted = Object.values(gameState.topGifters).sort((a, b) => b.totalDiamonds - a.totalDiamonds);
+            const sorted = Object.values(gameState.topGifters).sort((a, b) => b.totalDiamonds - a.totalDiamonds).slice(0, 10);
             if (sorted.length === 0) { topGiftersList.innerHTML = '<p class="text-white/50 text-[10px] italic">Belum ada gift...</p>'; return; }
             let html = sorted.map((gifter, i) => createRankItemHorizontalHTML(gifter, i, 'gift')).join('');
             topGiftersList.innerHTML = html; lucide.createIcons();
@@ -1163,7 +1214,7 @@
              const crownColor = type === 'like' ? 'text-yellow-400' : 'text-indigo-300';
              
              return `<div class="flex items-center gap-1.5 bg-white/10 px-2 py-0.5 rounded-full border border-white/10 shrink-0">
-                ${isTop ? `<span class="${crownColor} text-sm">👑</span>` : `<span class="text-[10px] font-bold text-${colorClass}-300">#${index+1}</span>`}
+                ${isTop ? `<span class="${crownColor} text-sm">荘</span>` : `<span class="text-[10px] font-bold text-${colorClass}-300">#${index+1}</span>`}
                 <img src="${user.profilePictureUrl}" class="w-5 h-5 rounded-full border border-white/30" onerror="this.src='https://placehold.co/40x40/FFFFFF/000000?text=?'">
                 <span class="text-white text-[11px] font-medium truncate max-w-[80px]">${user.nickname}</span>
                 <span class="text-${colorClass}-200 text-[10px] font-bold flex items-center gap-0.5">(${value})</span>
@@ -1386,7 +1437,7 @@
             container.innerHTML = sorted.length===0 ? '<p class="text-center text-slate-500 italic py-4">Belum ada data.</p>' : sorted.map((p,i)=>`
                 <div class="flex items-center gap-3 p-2.5 bg-white rounded-lg shadow-sm border border-slate-100 ${i===0?'bg-yellow-50 border-yellow-200':''}">
                     ${i===0?'':`<div class="flex-shrink-0 w-8 text-center font-bold ${i<3?'text-xl':'text-base text-slate-500'}">#${i+1}</div>`}
-                    ${i===0?`<div class="relative"><div class="absolute -top-3 -left-2 text-2xl z-10 animate-bounce-slow">👑</div><img src="${p.profilePic}" class="w-10 h-10 rounded-full border-4 border-yellow-400 shadow-md" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'"></div>`:`<img src="${p.profilePic}" class="w-9 h-9 rounded-full border-2 border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'">`}
+                    ${i===0?`<div class="relative"><div class="absolute -top-3 -left-2 text-2xl z-10 animate-bounce-slow">荘</div><img src="${p.profilePic}" class="w-10 h-10 rounded-full border-4 border-yellow-400 shadow-md" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'"></div>`:`<img src="${p.profilePic}" class="w-9 h-9 rounded-full border-2 border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'">`}
                     <div class="flex-grow overflow-hidden"><p class="font-semibold text-slate-800 truncate ${i===0?'font-bold text-amber-900':''}">${p.nickname.replace(/</g,"&lt;")}</p></div>
                     <div class="flex-shrink-0 text-right bg-blue-50 px-2 py-1 rounded-md"><p class="font-bold text-blue-600">${p.score}<span class="text-xs font-normal text-blue-400 ml-1">pt</span></p></div></div>`).join('');
         }
