@@ -440,7 +440,7 @@
                 </p>
             </div>
             <div id="all-complete-prompt" class="hidden">
-                <p class="text-xl text-green-600 font-bold mb-4">🎉 Semua Level Selesai! 🎉</p>
+                <p class="text-xl text-green-600 font-bold mb-4">🥳 Semua Level Selesai! 🥳</p>
                 <button data-action="go-home" class="w-full px-6 py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-transform active:scale-95">
                     Kembali ke Menu Utama
                 </button>
@@ -470,7 +470,7 @@
                 <span class="text-sm">Mengirim</span> <span id="gift-name" class="font-bold">Hadiah</span>!
             </p>
             <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-xl font-bold text-lg animate-bounce-slow">
-                MAKASIH KAK! 🎉
+                MAKASIH KAK! 🥳
             </div>
             <p class="text-slate-500 text-sm mt-3 animate-pulse">
                 Yuk follow <span id="gift-user-follow" class="font-bold text-purple-600">@username</span>!
@@ -866,6 +866,11 @@
         }
 
         function startOrContinueGame() {
+            if (isProcessingWin) {
+                console.log("Mencegah 'start' selagi memproses kemenangan.");
+                return; // <-- PERBAIKAN: Jangan jalankan fungsi ini jika sedang memproses kemenangan.
+            }
+            
             if (disconnectNotification) disconnectNotification.classList.add('hidden'); if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); 
             if (tiktokStatus && tiktokStatus.textContent.includes('Harap hubungkan')) { tiktokStatus.textContent = 'Belum terhubung.'; tiktokStatus.classList.remove('text-red-600'); }
             
@@ -1386,13 +1391,13 @@
             container.innerHTML = sorted.length===0 ? '<p class="text-center text-slate-500 italic py-4">Belum ada data.</p>' : sorted.map((p,i)=>`
                 <div class="flex items-center gap-3 p-2.5 bg-white rounded-lg shadow-sm border border-slate-100 ${i===0?'bg-yellow-50 border-yellow-200':''}">
                     ${i===0?'':`<div class="flex-shrink-0 w-8 text-center font-bold ${i<3?'text-xl':'text-base text-slate-500'}">#${i+1}</div>`}
-                    ${i===0?`<div class="relative"><div class="absolute -top-3 -left-2 text-2xl z-10 animate-bounce-slow">👑</div><img src="${p.profilePic}" class="w-10 h-10 rounded-full border-4 border-yellow-400 shadow-md" onerror="this.src='https.placehold.co/40x40/94A3B8/FFFFFF?text=?'"></div>`:`<img src="${p.profilePic}" class="w-9 h-9 rounded-full border-2 border-slate-200 shadow-sm" onerror="this.src='https.placehold.co/40x40/94A3B8/FFFFFF?text=?'">`}
+                    ${i===0?`<div class="relative"><div class="absolute -top-3 -left-2 text-2xl z-10 animate-bounce-slow">👑</div><img src="${p.profilePic}" class="w-10 h-10 rounded-full border-4 border-yellow-400 shadow-md" onerror="this.src='https.placehold.co/40x40/94A3B8/FFFFFF?text=?'"></div>`:`<img src="${p.profilePic}" class="w-9 h-9 rounded-full border-2 border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'">`}
                     <div class="flex-grow overflow-hidden"><p class="font-semibold text-slate-800 truncate ${i===0?'font-bold text-amber-900':''}">${p.nickname.replace(/</g,"&lt;")}</p></div>
                     <div class="flex-shrink-0 text-right bg-blue-50 px-2 py-1 rounded-md"><p class="font-bold text-blue-600">${p.score}<span class="text-xs font-normal text-blue-400 ml-1">pt</span></p></div></div>`).join('');
         }
 
         function showCorrectToast(msg, pts, bonus) {
-            const html = `<img src="${msg.profilePictureUrl||'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-12 h-12 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https.placehold.co/40x40/4ADE80/14532D?text=:)'">
+            const html = `<img src="${msg.profilePictureUrl||'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-12 h-12 rounded-full border-2 border-white flex-shrink-0 shadow-sm" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'">
                 <div class="flex-grow overflow-hidden pr-2"><p class="font-bold text-white truncate text-shadow-sm text-lg">${(msg.nickname||'Anonim').replace(/</g,"&lt;")}</p><p class="text-sm text-green-100 font-medium">${correctPhrases[Math.floor(Math.random()*correctPhrases.length)]}</p></div>
                 <div class="flex-shrink-0 font-bangers px-3 py-1 rounded-full text-xl rotate-6 shadow-md ${bonus?'bg-gradient-to-r from-yellow-300 to-amber-500 text-amber-900 animate-pulse scale-110 border-2 border-white':'bg-yellow-400 text-yellow-900'}">${bonus?'BONUS! ':''}+${pts}</div>`;
             createToast(html, 'correct');
