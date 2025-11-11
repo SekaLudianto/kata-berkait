@@ -510,6 +510,14 @@
         const TOP_LIKERS_KEY = 'kata-rantai-top-likers-v1'; 
         const TOP_GIFTERS_KEY = 'kata-rantai-top-gifters-v1';
 
+        // --- TAMBAHAN: Daftar Server Backend ---
+        const TIKTOK_SERVERS = [
+            "https://tiktok-server-production-e573.up.railway.app",
+            "https://tiktok-server-claude-production.up.railway.app"
+        ];
+        let currentServerIndex = 0;
+        // --- Selesai ---
+
         let githubConfig = { OWNER: 'SekaLudianto', REPO: 'kata-berkait', PATH: 'csv', BRANCH: 'main' };
 
         class TikTokIOConnection {
@@ -975,7 +983,7 @@
                     stickerOverlay.classList.remove('hidden');
                     stickerContent.classList.add('sticker-animate');
                     // Confetti lagi saat stiker muncul biar heboh
-                    confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 }, scalar: 1.2 });
+                    // confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 }, scalar: 1.2 }); // <-- DIHILANGKAN SESUAI PERMINTAAN
 
                     // 3. Jeda 3 detik lagi untuk durasi stiker, baru tampilkan modal menang
                     setTimeout(() => {
@@ -991,52 +999,124 @@
         function loadNextLevel() { gameState.revealedWords = []; isProcessingWin = false; loadLevel(gameState.currentLevelIndex + 1); }
         function goToHome() { if (disconnectNotification) disconnectNotification.classList.add('hidden'); if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); showPage('home'); updateHomeUI(); }
 
+        // --- FUNGSI connectToTikTok (DIMODIFIKASI) ---
         function connectToTikTok(userToConnect = null) {
             const uniqueId = userToConnect || tiktokUsername.value.trim();
-            if (!uniqueId) { tiktokStatus.textContent = 'Username kosong!'; tiktokStatus.classList.add('text-red-600'); return; }
-            tiktokStatus.textContent = `Menghubungkan ke @${uniqueId}...`; if (disconnectReason) disconnectReason.textContent = tiktokStatus.textContent;
-            tiktokStatus.classList.remove('text-red-600', 'text-green-600'); connectButton.disabled = true; startGameButton.disabled = true;
+            if (!uniqueId) {
+                tiktokStatus.textContent = 'Username kosong!';
+                tiktokStatus.classList.add('text-red-600');
+                return;
+            }
             
-            // Pastikan instance lama (jika ada) dibersihkan SEBELUM membuat yang baru
+            // Reset ke server pertama setiap kali koneksi manual dimulai
+            currentServerIndex = 0; 
+            
+            tiktokStatus.textContent = `Menghubungkan ke @${uniqueId}...`;
+            if (disconnectReason) disconnectReason.textContent = tiktokStatus.textContent;
+            tiktokStatus.classList.remove('text-red-600', 'text-green-600');
+            connectButton.disabled = true;
+            startGameButton.disabled = true;
+            
+            // Mulai upaya koneksi
+            tryConnectionAttempt(currentServerIndex, uniqueId);
+        }
+
+        // --- FUNGSI BARU: tryConnectionAttempt ---
+        function tryConnectionAttempt(index, uniqueId) {
+            currentServerIndex = index;
+
+            // Jika sudah mencoba semua server, menyerah.
+            if (index >= TIKTOK_SERVERS.length) {
+                const errorMsg = 'Gagal terhubung ke semua server.';
+                tiktokStatus.textContent = errorMsg;
+                tiktokStatus.classList.add('text-red-600');
+                connectButton.disabled = false;
+                startGameButton.disabled = false;
+                if(disconnectReason) disconnectReason.textContent = errorMsg;
+                if(gameState.isGameActive) {
+                    disconnectNotification.classList.remove('hidden');
+                    headerReconnectBtn.classList.remove('hidden'); // Tampilkan tombol "Coba Lagi" manual
+                }
+                return;
+            }
+
+            const serverUrl = TIKTOK_SERVERS[index];
+            const statusMsg = `Mencoba Server ${index + 1}/${TIKTOK_SERVERS.length} ke @${uniqueId}...`;
+            
+            tiktokStatus.textContent = statusMsg;
+            if(disconnectReason) disconnectReason.textContent = statusMsg;
+            
+            // Pastikan instance lama (jika ada) dibersihkan
             if (tiktokConnection) { 
                 tiktokConnection.removeAllCustomListeners(); 
                 tiktokConnection.socket.disconnect(); 
                 tiktokConnection = null; 
             }
             
-            tiktokConnection = new TikTokIOConnection("https://tiktok-server-production-e573.up.railway.app");
+            tiktokConnection = new TikTokIOConnection(serverUrl);
             
             tiktokConnection.connect(uniqueId, {}).then(() => {
-                tiktokStatus.textContent = `Terhubung ke @${uniqueId}`; tiktokStatus.classList.add('text-green-600');
-                startGameButton.disabled = false; saveLastUsername(uniqueId); 
-                if (disconnectNotification) disconnectNotification.classList.add('hidden'); if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); if (simContainer) simContainer.classList.add('hidden');
-                setupTikTokListeners();
-            }).catch(err => { 
-                tiktokStatus.textContent = `Gagal: ${err}`; tiktokStatus.classList.add('text-red-600'); 
-                connectButton.disabled = false; startGameButton.disabled = false; 
-                if(disconnectReason) disconnectReason.textContent = `Gagal: ${err}`; 
+                // SUKSES
+                tiktokStatus.textContent = `Terhubung ke @${uniqueId} (Server ${index + 1})`;
+                tiktokStatus.classList.add('text-green-600');
+                startGameButton.disabled = false;
+                saveLastUsername(uniqueId);
+                if (disconnectNotification) disconnectNotification.classList.add('hidden');
+                if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden');
+                if (simContainer) simContainer.classList.add('hidden');
                 
-                // Jika gagal, pastikan koneksi null agar !konek bisa dicoba lagi
-                if (tiktokConnection) {
-                    tiktokConnection.removeAllCustomListeners();
-                    tiktokConnection.socket.disconnect();
-                    tiktokConnection = null;
-                }
+                setupTikTokListeners();
+
+            }).catch(err => { 
+                // GAGAL, COBA SERVER BERIKUTNYA
+                console.warn(`Koneksi ke ${serverUrl} gagal: ${err}. Mencoba server berikutnya...`);
+                // Coba server berikutnya di daftar
+                tryConnectionAttempt(index + 1, uniqueId);
             });
         }
 
+        // --- FUNGSI handleDisconnect (DIMODIFIKASI) ---
         function handleDisconnect(reason) {
-            tiktokStatus.textContent = reason; tiktokStatus.classList.add('text-red-600'); connectButton.disabled = false; startGameButton.disabled = false;
+            // Jika tidak sedang dalam game, tampilkan error di home & berhenti.
+            if (!gameState.isGameActive) {
+                tiktokStatus.textContent = reason;
+                tiktokStatus.classList.add('text-red-600');
+                connectButton.disabled = false;
+                startGameButton.disabled = false;
+                if (tiktokConnection) { 
+                    tiktokConnection.removeAllCustomListeners();
+                    tiktokConnection.socket.disconnect(); // Putuskan socket lama
+                    tiktokConnection = null; 
+                }
+                updateHomeUI();
+                return;
+            }
+
+            // Jika SEDANG DALAM GAME, coba auto-reconnect ke server berikutnya.
+            console.warn(`Disconnect: ${reason}. Mencoba auto-reconnect...`);
+            
+            // Tampilkan notifikasi, tapi sembunyikan tombol "Coba Lagi"
+            if(disconnectReason) disconnectReason.textContent = "Koneksi terputus! Mencoba server lain...";
+            disconnectNotification.classList.remove('hidden');
+            headerReconnectBtn.classList.add('hidden'); 
+
             if (tiktokConnection) { 
                 tiktokConnection.removeAllCustomListeners(); 
-                // JANGAN disconnect socket.io, agar command !konek host masih bisa diterima
-                // tiktokConnection.socket.disconnect(); 
-                // tiktokConnection = null; 
-                // Cukup set uniqueId ke null untuk menandakan koneksi TikTok-nya putus
-                tiktokConnection.uniqueId = null; 
+                tiktokConnection.socket.disconnect();
+                tiktokConnection = null; 
             }
-            updateHomeUI();
-            if (gameState.isGameActive) { if (disconnectReason) disconnectReason.textContent = reason; disconnectNotification.classList.remove('hidden'); headerReconnectBtn.classList.remove('hidden'); lucide.createIcons(); simContainer.classList.add('hidden'); }
+
+            // Coba server *berikutnya* (looping)
+            currentServerIndex = (currentServerIndex + 1) % TIKTOK_SERVERS.length;
+            
+            // Beri jeda 2 detik sebelum mencoba lagi
+            setTimeout(() => {
+                if (!lastConnectedUsername) { // Jika Anehnya tidak ada username
+                    goToHome(); // Kembali ke home
+                    return;
+                }
+                tryConnectionAttempt(currentServerIndex, lastConnectedUsername);
+            }, 2000);
         }
 
         function setupTikTokListeners() {
@@ -1337,11 +1417,13 @@
             if (!el && init) { el = document.createElement('div'); el.id = `slot-${i}`; wordListContainer.appendChild(el); }
             if (!el) return;
             if (data) {
-                el.className = "flex items-center gap-3 opacity-90 pop-in";
-                el.innerHTML = `<span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-white text-slate-800 font-bold text-lg shadow-sm">${i+1}</span>
-                    <div class="flex-grow bg-white p-3 rounded-xl word-slot-shadow border border-slate-100 ${level.bonusWords[i]?'ring-2 ring-yellow-400':''}">
-                        <div class="flex justify-between items-center flex-wrap gap-2"><span class="font-bold text-xl text-slate-800">${data.word}</span>
-                            <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-full"><span class="text-xs font-medium text-slate-600 truncate max-w-[100px] text-right">${data.solver.nickname.replace(/</g,"&lt;")}</span><img src="${data.solver.profilePic||'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-6 h-6 rounded-full border border-slate-200" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'"></div></div></div>`;
+                // --- PERUBAHAN DI SINI: Ukuran diperkecil ---
+                el.className = "flex items-center gap-2 opacity-90 pop-in"; // gap-3 -> gap-2
+                el.innerHTML = `<span class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-white text-slate-800 font-bold text-base shadow-sm">${i+1}</span>
+                    <div class="flex-grow bg-white p-2.5 rounded-xl word-slot-shadow border border-slate-100 ${level.bonusWords[i]?'ring-2 ring-yellow-400':''}">
+                        <div class="flex justify-between items-center flex-wrap gap-1"><span class="font-bold text-lg text-slate-800">${data.word}</span>
+                            <div class="flex items-center gap-1.5 bg-slate-50 px-1.5 py-0.5 rounded-full"><span class="text-xs font-medium text-slate-600 truncate max-w-[100px] text-right">${data.solver.nickname.replace(/</g,"&lt;")}</span><img src="${data.solver.profilePic||'https://placehold.co/40x40/4ADE80/14532D?text=:)'}" class="w-5 h-5 rounded-full border border-slate-200" onerror="this.src='https://placehold.co/40x40/4ADE80/14532D?text=:)'"></div></div></div>`;
+                // --- AKHIR PERUBAHAN ---
             } else if (i === gameState.nextSlotToGuess) {
                 const clue = (level.difficulty||'').toLowerCase()==='sulit'?'':(level.clues[i]||'Tebak!');
                 
