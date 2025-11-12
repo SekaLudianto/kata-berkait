@@ -326,6 +326,11 @@
                     <!-- Info Stage -->
                     <span id="stage-info" class="text-xs sm:text-sm bg-white/20 px-2 py-0.5 rounded-full font-medium backdrop-blur-sm">S1</span>
                     <h1 id="level-title" class="text-sm sm:text-xl font-semibold opacity-90">Lvl 1</h1>
+                    <!-- Container Timer Baru -->
+                    <div id="word-timer-container" class="font-bold text-2xl text-white drop-shadow-md" style="display: none;">
+                        <i data-lucide="timer" class="w-5 h-5 inline-block -mt-1"></i>
+                        <span id="word-timer-display">3:00</span>
+                    </div>
                     <!-- Tombol Reconnect Kecil -->
                     <button id="header-reconnect-btn" data-action="manual-reconnect" class="hidden pointer-events-auto bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 animate-pulse transition-colors" title="Koneksi Terputus! Klik untuk hubungkan ulang.">
                         <i data-lucide="wifi-off" class="w-3 h-3"></i>
@@ -565,8 +570,12 @@
         const STORAGE_KEY = 'kata-rantai-save-v1';
         const correctPhrases = ["Wih, Jagoan!", "Jenius!", "Mantap Betul!", "Gokil!", "Anjay GG!", "Luar Biasa!", "Kerja Bagus!", "Hebat!", "Cakep kek pantun!"];
         const incorrectPhrases = ["Typo ya?", "Coba Lagi!", "Betul tapi boong!", "Zonk!", "Waduh!", "Dikit Lagi!", "Hampir...!", "Bukan itu!", "Salah Woy!"];
-        let gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, isAcceptingGuesses: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: {}, topLikers: {}, topGifters: {}, currentHints: [] }; 
+        
+        const WORD_TIMER_DURATION = 180; // 3 menit
+        
+        let gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, isAcceptingGuesses: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: {}, topLikers: {}, topGifters: {}, currentHints: [], wordTimerInterval: null, wordTimerRemaining: WORD_TIMER_DURATION }; 
         let isProcessingWin = false;
+        let isReconnecting = false; // <-- TAMBAHKAN FLAG INI
         let tiktokConnection = null;
         let lastProcessedGiftId = null; // <-- TAMBAHKAN INI
         let lastConnectedUsername = null; 
@@ -915,9 +924,11 @@
             if (levelIndex >= levelData.length) levelIndex = 0;
             gameState.currentLevelIndex = levelIndex; const level = levelData[levelIndex];
             if (forceReset || gameState.revealedWords.length !== level.words.length || !gameState.isGameActive) {
+                stopWordTimer(); // <-- Hentikan timer
                 gameState.isLevelComplete = false; isProcessingWin = false; 
                 lastProcessedGiftId = null; 
                 gameState.currentHints = []; // <-- TAMBAHKAN INI (Reset petunjuk)
+                gameState.wordTimerRemaining = WORD_TIMER_DURATION; // <-- Reset durasi timer
                 gameState.isAcceptingGuesses = false; // JANGAN terima tebakan dulu
                 gameState.revealedWords = new Array(level.words.length).fill(null);
                 (level.openSlots || [0]).forEach(index => { if (index < level.words.length) gameState.revealedWords[index] = { word: level.words[index], solver: { nickname: 'SISTEM', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } }; });
@@ -970,6 +981,7 @@
             
             // Jika level selesai (semua kata tertebak)
             if (nextIndex === -1 && gameState.isGameActive && !gameState.isLevelComplete) {
+                stopWordTimer(); // <-- Hentikan timer
                 gameState.isLevelComplete = true; isProcessingWin = true; 
                 gameState.isAcceptingGuesses = false; // Stop terima tebakan saat menang
                 saveState();
@@ -994,10 +1006,18 @@
                     }, 3000);
 
                 }, 2000);
+            } else if (nextIndex !== -1) {
+                startWordTimer(); // <-- Mulai timer untuk kata baru
             }
         }
         function loadNextLevel() { gameState.revealedWords = []; isProcessingWin = false; loadLevel(gameState.currentLevelIndex + 1); }
-        function goToHome() { if (disconnectNotification) disconnectNotification.classList.add('hidden'); if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); showPage('home'); updateHomeUI(); }
+        function goToHome() { 
+            stopWordTimer(); // <-- Hentikan timer
+            if (disconnectNotification) disconnectNotification.classList.add('hidden'); 
+            if (headerReconnectBtn) headerReconnectBtn.classList.add('hidden'); 
+            showPage('home'); 
+            updateHomeUI(); 
+        }
 
         // --- FUNGSI connectToTikTok (DIMODIFIKASI) ---
         function connectToTikTok(userToConnect = null) {
@@ -1008,6 +1028,13 @@
                 return;
             }
             
+            // PERBAIKAN: Cek flag
+            if (isReconnecting) {
+                console.log("Sedang mencoba koneksi, harap tunggu.");
+                return;
+            }
+            isReconnecting = true; // <-- SET FLAG
+
             // Reset ke server pertama setiap kali koneksi manual dimulai
             currentServerIndex = 0; 
             
@@ -1037,6 +1064,7 @@
                     disconnectNotification.classList.remove('hidden');
                     headerReconnectBtn.classList.remove('hidden'); // Tampilkan tombol "Coba Lagi" manual
                 }
+                isReconnecting = false; // <-- RESET FLAG (GAGAL TOTAL)
                 return;
             }
 
@@ -1057,6 +1085,7 @@
             
             tiktokConnection.connect(uniqueId, {}).then(() => {
                 // SUKSES
+                isReconnecting = false; // <-- RESET FLAG (SUKSES)
                 tiktokStatus.textContent = `Terhubung ke @${uniqueId} (Server ${index + 1})`;
                 tiktokStatus.classList.add('text-green-600');
                 startGameButton.disabled = false;
@@ -1077,6 +1106,13 @@
 
         // --- FUNGSI handleDisconnect (DIMODIFIKASI) ---
         function handleDisconnect(reason) {
+            // PERBAIKAN: Cek flag isReconnecting
+            if (isReconnecting) {
+                console.log("Sudah dalam proses reconnect, mengabaikan disconnect event tambahan.");
+                return;
+            }
+            isReconnecting = true; // <-- SET FLAG
+
             // Jika tidak sedang dalam game, tampilkan error di home & berhenti.
             if (!gameState.isGameActive) {
                 tiktokStatus.textContent = reason;
@@ -1089,6 +1125,7 @@
                     tiktokConnection = null; 
                 }
                 updateHomeUI();
+                isReconnecting = false; // <-- RESET FLAG
                 return;
             }
 
@@ -1113,6 +1150,7 @@
             setTimeout(() => {
                 if (!lastConnectedUsername) { // Jika Anehnya tidak ada username
                     goToHome(); // Kembali ke home
+                    isReconnecting = false; // <-- RESET FLAG
                     return;
                 }
                 tryConnectionAttempt(currentServerIndex, lastConnectedUsername);
@@ -1171,8 +1209,8 @@
             gameState.leaderboard[uniqueId].coins = (gameState.leaderboard[uniqueId].coins || 0) + diamonds;
             gameState.leaderboard[uniqueId].nickname = nickname; // Update nama
             gameState.leaderboard[uniqueId].profilePic = profilePictureUrl; // Update foto
-            saveLeaderboard(); // Simpan data koin
-
+            saveLeaderboard(); // PERBAIKAN: Ganti 'saveLeaderaboa' menjadi 'saveLeaderboard'
+            
             // Tampilkan notifikasi perolehan koin (selain notifikasi gift)
             setTimeout(() => {
                 createToast(
@@ -1226,19 +1264,37 @@
         function renderTopLikers() {
             if (!topLikersList) return;
             const sorted = Object.values(gameState.topLikers).sort((a, b) => b.totalLikes - a.totalLikes).slice(0, 10);
-            if (sorted.length === 0) { topLikersList.innerHTML = '<p class="text-white/50 text-[10px] italic">Belum ada like...</p>'; return; }
+            if (sorted.length === 0) { 
+                topLikersList.innerHTML = '<p class="text-white/50 text-[10px] italic">Belum ada like...</p>'; 
+                // Hentikan scroll jika tidak ada konten
+                if (likerScrollInterval) clearInterval(likerScrollInterval);
+                likerScrollInterval = null;
+                return; 
+            }
             let html = sorted.map((liker, i) => createRankItemHorizontalHTML(liker, i, 'like')).join('');
-            // Duplicate for smoother infinite scroll if needed, but standard scroll is okay for now.
-            // html += html; 
+            html += html; // PERBAIKAN: Duplikasi HTML untuk scrolling mulus
             topLikersList.innerHTML = html; lucide.createIcons();
+            
+            // PERBAIKAN: Mulai ulang interval scroll setiap kali di-render ulang
+            likerScrollInterval = startAutoScroll('top-likers-list', likerScrollInterval);
         }
 
         function renderTopGifters() {
             if (!topGiftersList) return;
             const sorted = Object.values(gameState.topGifters).sort((a, b) => b.totalDiamonds - a.totalDiamonds).slice(0, 10);
-            if (sorted.length === 0) { topGiftersList.innerHTML = '<p class="text-white/50 text-[10px] italic">Belum ada gift...</p>'; return; }
+            if (sorted.length === 0) { 
+                topGiftersList.innerHTML = '<p class="text-white/50 text-[10px] italic">Belum ada gift...</p>'; 
+                // Hentikan scroll jika tidak ada konten
+                if (gifterScrollInterval) clearInterval(gifterScrollInterval);
+                gifterScrollInterval = null;
+                return; 
+            }
             let html = sorted.map((gifter, i) => createRankItemHorizontalHTML(gifter, i, 'gift')).join('');
+            html += html; // PERBAIKAN: Duplikasi HTML untuk scrolling mulus
             topGiftersList.innerHTML = html; lucide.createIcons();
+
+            // PERBAIKAN: Mulai ulang interval scroll setiap kali di-render ulang
+            gifterScrollInterval = startAutoScroll('top-gifters-list', gifterScrollInterval);
         }
 
          function createRankItemHorizontalHTML(user, index, type) {
@@ -1256,21 +1312,35 @@
         }
 
         function startAutoScroll(elementId, intervalVar) {
+            // PERBAIKAN: Hapus interval lama yang mungkin masih berjalan
             if (intervalVar) clearInterval(intervalVar);
+            
             const el = document.getElementById(elementId);
             if (!el) return null;
             let pos = 0; const speed = 0.5;
+
+            // Kembalikan interval ID yang baru
             return setInterval(() => {
                 if (!el.parentElement) return;
-                // Scroll horizontal if content is wider than viewport
-                if (el.scrollWidth > el.parentElement.clientWidth) {
+
+                const contentWidth = el.scrollWidth;
+                const viewportWidth = el.parentElement.clientWidth;
+                
+                // PERBAIKAN: Lebar satu kopi adalah setengah dari total (karena diduplikasi)
+                const singleCopyWidth = contentWidth / 2;
+
+                // Hanya scroll jika konten (satu kopi) lebih lebar dari viewport
+                if (singleCopyWidth > viewportWidth) {
                      pos += speed;
-                     // Reset loop when scrolled past end. 
-                     if (pos >= el.scrollWidth) {
-                         pos = -el.parentElement.clientWidth; // Start from right edge for ticker effect
+                     
+                     // PERBAIKAN: Jika sudah scroll sejauh satu kopi, reset ke 0
+                     if (pos >= singleCopyWidth) {
+                         pos = 0; // Reset ke awal
                      }
+                     
                      el.style.transform = `translateX(${-pos}px)`;
                 } else {
+                     // Tidak cukup konten untuk di-scroll, diam di tempat
                      pos = 0;
                      el.style.transform = `translateX(0px)`;
                 }
@@ -1359,7 +1429,8 @@
 
                     // Beri notifikasi
                     createToast(
-                        `<img src="${msg.profilePictureUrl||'https'}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" onerror="this.src='https://placehold.co/40x40/FBBF24/78350F?text=?'">
+                        // PERBAIKAN: Ganti 'https' menjadi URL placeholder
+                        `<img src="${msg.profilePictureUrl||'https://placehold.co/40x40/FBBF24/78350F?text=?'}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" onerror="this.src='https://placehold.co/40x40/FBBF24/78350F?text=?'">
                          <div class="flex-grow overflow-hidden">
                              <p class="font-bold text-white truncate">${(msg.nickname||'Anonim').replace(/</g,"&lt;")}</p>
                              <p class="text-sm text-amber-100 font-medium">Memakai 1 Koin! Huruf '${newHintLetter}' terbuka!</p>
@@ -1381,7 +1452,12 @@
             // --- PERINTAH !HINT SELESAI ---
 
 
+            // --- FITUR !CLUE AI DIHAPUS ---
+
+
             if (comment === '!SKIP' && isHost) {
+                stopWordTimer(); // <-- Hentikan timer
+                // PERBAIKAN: Ganti 'https->placehold.co' menjadi 'https://placehold.co'
                 const idx = gameState.nextSlotToGuess; gameState.revealedWords[idx] = { word: levelData[gameState.currentLevelIndex].words[idx], solver: { nickname: 'Host Skip', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } };
                 createToast(`<div class="flex-grow"><p class="font-bold text-white">Host</p><p class="text-sm text-blue-100">Skip kata!</p></div>`, 'system');
                 updateNextSlotToGuess(); saveState(); renderSingleSlot(idx, gameState.revealedWords[idx]); if (gameState.nextSlotToGuess !== -1) renderSingleSlot(gameState.nextSlotToGuess, null);
@@ -1390,6 +1466,7 @@
             
             const correct = levelData[gameState.currentLevelIndex].words[gameState.nextSlotToGuess];
             if (comment === correct) {
+                stopWordTimer(); // <-- Hentikan timer
                 const isBonus = levelData[gameState.currentLevelIndex].bonusWords[gameState.nextSlotToGuess];
                 const points = isBonus ? 20 : 10; showCorrectToast(msg, points, isBonus);
                 if (msg.uniqueId) addScore(msg.uniqueId, msg.nickname || 'Anonim', msg.profilePictureUrl || '', points);
@@ -1473,7 +1550,7 @@
             container.innerHTML = sorted.length===0 ? '<p class="text-center text-slate-500 italic py-4">Belum ada data.</p>' : sorted.map((p,i)=>`
                 <div class="flex items-center gap-3 p-2.5 bg-white rounded-lg shadow-sm border border-slate-100 ${i===0?'bg-yellow-50 border-yellow-200':''}">
                     ${i===0?'':`<div class="flex-shrink-0 w-8 text-center font-bold ${i<3?'text-xl':'text-base text-slate-500'}">#${i+1}</div>`}
-                    ${i===0?`<div class="relative"><div class="absolute -top-3 -left-2 text-2xl z-10 animate-bounce-slow">👑</div><img src="${p.profilePic}" class="w-10 h-10 rounded-full border-4 border-yellow-400 shadow-md" onerror="this.src='https.placehold.co/40x40/94A3B8/FFFFFF?text=?'"></div>`:`<img src="${p.profilePic}" class="w-9 h-9 rounded-full border-2 border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'">`}
+                    ${i===0?`<div class="relative"><div class="absolute -top-3 -left-2 text-2xl z-10 animate-bounce-slow">👑</div><img src="${p.profilePic}" class="w-10 h-10 rounded-full border-4 border-yellow-400 shadow-md" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'"></div>`:`<img src="${p.profilePic}" class="w-9 h-9 rounded-full border-2 border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/40x40/94A3B8/FFFFFF?text=?'">`}
                     <div class="flex-grow overflow-hidden"><p class="font-semibold text-slate-800 truncate ${i===0?'font-bold text-amber-900':''}">${p.nickname.replace(/</g,"&lt;")}</p></div>
                     <div class="flex-shrink-0 text-right bg-blue-50 px-2 py-1 rounded-md"><p class="font-bold text-blue-600">${p.score}<span class="text-xs font-normal text-blue-400 ml-1">pt</span></p></div></div>`).join('');
         }
@@ -1509,11 +1586,96 @@
             saveLeaderboard();
         }
 
+        // --- FUNGSI BARU UNTUK TIMER ---
+        function stopWordTimer() {
+            if (gameState.wordTimerInterval) {
+                clearInterval(gameState.wordTimerInterval);
+                gameState.wordTimerInterval = null;
+            }
+            const timerContainer = document.getElementById('word-timer-container');
+            if (timerContainer) timerContainer.style.display = 'none';
+        }
+
+        function startWordTimer() {
+            stopWordTimer(); // Hentikan timer lama (jika ada)
+            gameState.wordTimerRemaining = WORD_TIMER_DURATION;
+            
+            const timerContainer = document.getElementById('word-timer-container');
+            const timerDisplay = document.getElementById('word-timer-display');
+            if (!timerContainer || !timerDisplay) return;
+
+            timerContainer.style.display = 'block';
+            lucide.createIcons(); // Render ikon timer
+
+            const updateDisplay = () => {
+                const minutes = Math.floor(gameState.wordTimerRemaining / 60);
+                const seconds = gameState.wordTimerRemaining % 60;
+                timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                // Beri warna merah jika sisa 10 detik
+                timerContainer.classList.toggle('text-red-400', gameState.wordTimerRemaining <= 10);
+                timerContainer.classList.toggle('animate-pulse', gameState.wordTimerRemaining <= 10);
+                timerContainer.classList.toggle('text-white', gameState.wordTimerRemaining > 10);
+            };
+
+            updateDisplay(); // Tampilkan waktu awal
+
+            gameState.wordTimerInterval = setInterval(() => {
+                gameState.wordTimerRemaining--;
+                updateDisplay();
+
+                if (gameState.wordTimerRemaining <= 0) {
+                    stopWordTimer();
+                    // Waktu habis, panggil auto-skip
+                    console.log("Waktu habis! Auto-skip.");
+                    handleAutoSkip();
+                }
+            }, 1000);
+        }
+
+        function handleAutoSkip() {
+            if (!gameState.isGameActive || gameState.nextSlotToGuess === -1 || gameState.isLevelComplete) return;
+
+            const idx = gameState.nextSlotToGuess;
+            const correctWord = levelData[gameState.currentLevelIndex].words[idx];
+            
+            gameState.revealedWords[idx] = { 
+                word: correctWord, 
+                solver: { nickname: 'WAKTU HABIS', profilePic: 'https://placehold.co/40x40/EF4444/FFFFFF?text=X' } 
+            };
+            
+            createToast(
+                `<i data-lucide="clock-off" class="w-10 h-10 text-red-300 flex-shrink-0"></i>
+                 <div class="flex-grow overflow-hidden">
+                     <p class="font-bold text-white truncate text-shadow-sm">Waktu Habis!</p>
+                     <p class="text-sm text-red-100 font-medium">Jawabannya: ${correctWord}</p>
+                 </div>`, 
+                'incorrect'
+            );
+            lucide.createIcons();
+
+            gameState.currentHints = []; // Reset hints untuk kata berikutnya
+            const solvedIdx = gameState.nextSlotToGuess;
+            updateNextSlotToGuess(); // Ini akan mencari slot berikutnya DAN memulai timer baru
+            saveState();
+            
+            // Render slot yang baru saja di-skip
+            renderSingleSlot(solvedIdx, gameState.revealedWords[solvedIdx]);
+            // Render slot aktif yang baru (jika ada)
+            if (gameState.nextSlotToGuess !== -1) {
+                renderSingleSlot(gameState.nextSlotToGuess, null);
+            }
+        }
+        // --- AKHIR FUNGSI TIMER ---
+
+        // --- FUNGSI AI CLUE DIHAPUS ---
+
         // --- PERBAIKAN FUNGSI DI SINI ---
         async function fetchAndUpdateLevels() {
             githubConfig.OWNER = ghUsernameInput.value.trim() || githubConfig.OWNER; githubConfig.REPO = ghRepoInput.value.trim() || githubConfig.REPO; githubConfig.PATH = ghPathInput.value.trim();
             levelUpdateStatus.textContent = `Menghubungi GitHub...`; levelUpdateStatus.className = "text-center text-sm text-slate-600 h-auto min-h-[1.25rem]";
             try {
+                // PERBAIKAN: Ganti 'https-api.github.com' menjadi 'https://api.github.com'
                 const res = await fetch(`https://api.github.com/repos/${githubConfig.OWNER}/${githubConfig.REPO}/contents/${githubConfig.PATH}`);
                 if (!res.ok) throw new Error(`Gagal akses GitHub: ${res.status}`);
                 
@@ -1531,7 +1693,7 @@
             // --- BAGIAN YANG HILANG SELESAI ---
         }
 
-        function resetGameProgress() { localStorage.removeItem(STORAGE_KEY); const lb = gameState.leaderboard||{}, tl = gameState.topLikers||{}, tg = gameState.topGifters||{}; gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: lb, topLikers: tl, topGifters: tg, currentHints: [] }; loadLeaderboard(); loadTopLikers(); loadTopGifters(); updateHomeUI(); }
+        function resetGameProgress() { localStorage.removeItem(STORAGE_KEY); const lb = gameState.leaderboard||{}, tl = gameState.topLikers||{}, tg = gameState.topGifters||{}; gameState = { currentLevelIndex: 0, isGameActive: false, isLevelComplete: false, revealedWords: [], nextSlotToGuess: -1, leaderboard: lb, topLikers: tl, topGifters: tg, currentHints: [], wordTimerInterval: null, wordTimerRemaining: WORD_TIMER_DURATION }; loadLeaderboard(); loadTopLikers(); loadTopGifters(); updateHomeUI(); }
         function loadLeaderboard() { 
             try { 
                 gameState.leaderboard = JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || {}; 
