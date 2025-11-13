@@ -1246,8 +1246,10 @@
             giftCard.classList.remove('gift-out');
             giftCard.classList.add('gift-in');
             
-            // Confetti khusus gift
-            confetti({ particleCount: 150, spread: 100, origin: { y: 0.3 }, colors: ['#A855F7', '#EC4899', '#FBBF24'] });
+            // Tunda confetti 500ms (durasi animasi gift-in)
+            setTimeout(() => {
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.3 }, colors: ['#A855F7', '#EC4899', '#FBBF24'] });
+            }, 500);
 
             // Sembunyikan setelah beberapa detik
             setTimeout(() => {
