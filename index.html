@@ -1453,11 +1453,15 @@
         }
 
         function showToast(title, msg, type, img) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
             const t = document.createElement('div');
             let colors = type === 'correct' ? 'border-emerald-500/50 bg-slate-900/90' : type === 'incorrect' ? 'border-red-500/50 bg-slate-900/90' : type === 'hint' ? 'border-amber-500/50 bg-slate-900/90' : 'border-blue-500/50 bg-slate-900/90';
+            // Perbaiki logika warna teks agar pesan sistem juga terlihat jelas
             let textColor = type === 'correct' ? 'text-emerald-400' : type === 'incorrect' ? 'text-red-400' : type === 'hint' ? 'text-amber-400' : 'text-blue-400';
             
-            t.className = `toast-enter flex items-center gap-3 p-3 rounded-xl border ${colors} backdrop-blur-md shadow-lg mb-2`;
+            t.className = `toast-enter flex items-center gap-3 p-3 rounded-xl border ${colors} backdrop-blur-md shadow-lg mb-2 transition-all duration-300`;
             t.innerHTML = `
                 <img src="${img || 'https://placehold.co/40x40/334155/FFFFFF?text=?'}" class="w-8 h-8 rounded-full border border-white/20">
                 <div class="min-w-0">
@@ -1465,8 +1469,24 @@
                     <p class="text-xs font-bold ${textColor}">${msg}</p>
                 </div>
             `;
-            toastContainer.prepend(t);
-            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(20px)'; setTimeout(() => t.remove(), 300); }, 3000);
+            
+            // Masukkan pesan baru di paling atas
+            container.prepend(t);
+
+            // LOGIKA BATAS 2 BARIS:
+            // Jika lebih dari 2, hapus yang paling bawah (terlama) segera
+            while (container.children.length > 2) {
+                container.removeChild(container.lastElementChild);
+            }
+
+            // Auto remove pesan ini setelah 3 detik (jika belum terhapus oleh limit)
+            setTimeout(() => { 
+                if (t.parentNode) {
+                    t.style.opacity = '0'; 
+                    t.style.transform = 'translateX(20px)'; 
+                    setTimeout(() => { if (t.parentNode) t.remove(); }, 300); 
+                }
+            }, 3000);
         }
 
         function addScore(uid, nick, pic, pts) {
