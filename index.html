@@ -259,8 +259,8 @@
                     <label for="connection-type" class="block text-xs font-medium text-slate-700 mb-1">Tipe Koneksi:</label>
                     <select id="connection-type" class="w-full bg-white border-2 border-blue-300 text-slate-900 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
                         <option value="tiktok-connector">TikTok Live Connector (Server Jarak Jauh)</option>
-                        <option value="indofinity-ws">IndoFinity WebSocket (Lokal: ws://localhost:62024)</option>
-                        <option value="indofinity-socketio">IndoFinity Socket.IO (Lokal: http://localhost:62025)</option>
+                        <option value="indofinity-ws">IndoFinity WebSocket (Manual/Ngrok)</option>
+                        <option value="indofinity-socketio">IndoFinity Socket.IO (Manual/Ngrok)</option>
                     </select>
                 </div>
                 
@@ -270,6 +270,9 @@
                         Username TikTok (@username):
                     </label>
                     <input type="text" id="connection-unique-id" placeholder="@username TikTok" class="flex-grow w-full bg-white text-slate-900 placeholder-slate-400 border-2 border-blue-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none">
+                    <p id="connection-hint" class="text-xs text-slate-500 mt-1 hidden italic">
+                        Jika deploy di Vercel, gunakan Ngrok (wss://...) atau IP Public. Localhost mungkin diblokir browser.
+                    </p>
                 </div>
 
                 <!-- Tombol dan Status Koneksi -->
@@ -678,7 +681,13 @@
             constructor(host) {
                 super();
                 this.ws = null;
-                this.serverUrl = `ws://${host}:${INDOFINITY_WS_PORT}`;
+                // LOGIC URL FLEKSIBEL: Cek apakah host sudah mengandung protokol (ws:// atau wss://)
+                // Jika ya, gunakan langsung. Jika tidak, anggap itu IP/Host dan tambahkan port default.
+                if (host.startsWith('ws://') || host.startsWith('wss://')) {
+                    this.serverUrl = host;
+                } else {
+                    this.serverUrl = `ws://${host}:${INDOFINITY_WS_PORT}`;
+                }
             }
 
             connect(uniqueId, options) {
@@ -740,7 +749,12 @@
             constructor(host) {
                 super();
                 this.socket = null;
-                this.serverUrl = `http://${host}:${INDOFINITY_SOCKETIO_PORT}`;
+                // LOGIC URL FLEKSIBEL: Cek apakah host sudah mengandung protokol
+                if (host.startsWith('http://') || host.startsWith('https://')) {
+                    this.serverUrl = host;
+                } else {
+                    this.serverUrl = `http://${host}:${INDOFINITY_SOCKETIO_PORT}`;
+                }
             }
 
             connect(uniqueId, options) {
@@ -837,6 +851,7 @@
         const connectionUniqueId = document.getElementById('connection-unique-id');
         const uniqueIdContainer = document.getElementById('unique-id-container');
         const uniqueIdLabel = document.getElementById('unique-id-label');
+        const connectionHint = document.getElementById('connection-hint'); // Hint baru
         const serverStatus = document.getElementById('server-status');
         const disconnectButton = document.getElementById('disconnect-button');
         const loginScreen = document.getElementById('login-screen');
@@ -975,15 +990,24 @@
             currentConnectionType = type;
             const isTikTok = type === 'tiktok-connector';
             const isIndoFinity = type.startsWith('indofinity');
-            uniqueIdContainer.classList.toggle('hidden', isIndoFinity);
+            
+            // Ubah logika: selalu tampilkan input field, tapi ubah labelnya
+            uniqueIdContainer.classList.remove('hidden');
+            connectionHint.classList.add('hidden'); // Reset hint
+
             if (isTikTok) {
                 uniqueIdLabel.textContent = 'Username TikTok (@username):';
                 connectionUniqueId.placeholder = '@username TikTok';
                 connectionUniqueId.value = lastConnectedUsername || '';
             } else if (isIndoFinity) {
-                const host = getDynamicIP(INDOFINITY_SOCKETIO_PORT);
-                connectionUniqueId.placeholder = `Host/IP (Auto: ${host})`;
-                connectionUniqueId.value = host;
+                const host = getDynamicIP();
+                const port = type === 'indofinity-ws' ? INDOFINITY_WS_PORT : INDOFINITY_SOCKETIO_PORT;
+                uniqueIdLabel.textContent = 'Alamat Host/IP/URL (Manual/Ngrok):';
+                connectionUniqueId.placeholder = `cth: 192.168.1.5 atau wss://...`;
+                connectionUniqueId.value = host; // Default IP
+                
+                // Tampilkan Hint Khusus untuk Vercel/Mixed Content
+                connectionHint.classList.remove('hidden');
             }
         }
 
@@ -1064,11 +1088,11 @@
                 currentServerIndex = 0; 
                 tryTikTokConnectionAttempt(currentServerIndex, uniqueId);
             } else if (type === 'indofinity-ws') {
-                currentConnection = new IndoFinityWSConnection(uniqueId || host);
+                currentConnection = new IndoFinityWSConnection(uniqueId || host); // uniqueId disini adalah input manual (IP/URL)
                 serverStatus.textContent = `Menghubungkan WS...`;
                 tryIndoFinityConnection(currentConnection, uniqueId);
             } else if (type === 'indofinity-socketio') {
-                currentConnection = new IndoFinityIOConnection(uniqueId || host);
+                currentConnection = new IndoFinityIOConnection(uniqueId || host); // uniqueId disini adalah input manual (IP/URL)
                 serverStatus.textContent = `Menghubungkan IO...`;
                 tryIndoFinityConnection(currentConnection, uniqueId);
             }
