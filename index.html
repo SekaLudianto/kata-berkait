@@ -424,6 +424,12 @@
                         <i data-lucide="timer" class="w-5 h-5 inline-block -mt-1"></i>
                         <span id="word-timer-display">3:00</span>
                     </div>
+                    <!-- Indikator Ping/Koneksi Baru -->
+                    <div id="connection-health" class="flex items-center gap-1 bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full ml-2" title="Status Koneksi">
+                        <div id="ping-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></div>
+                        <span id="queue-count" class="text-[10px] font-mono text-white/80 w-6 text-center">0</span>
+                    </div>
+
                     <!-- Tombol Reconnect Kecil -->
                     <button id="header-reconnect-btn" data-action="manual-reconnect" class="hidden pointer-events-auto bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 animate-pulse transition-colors" title="Koneksi Terputus! Klik untuk hubungkan ulang.">
                         <i data-lucide="wifi-off" class="w-3 h-3"></i>
@@ -1000,6 +1006,17 @@
         let giftQueue = [];
         let isGiftOverlayShowing = false;
         
+        // --- SISTEM ANTRIAN CHAT BARU (TUNING PERFORMA) ---
+        let chatQueue = [];
+        let isProcessingChat = false;
+        
+        // UPDATE: Dipercepat agar lebih responsif tapi tetap aman
+        const CHAT_PROCESS_RATE = 50; // Naikkan ke 50 pesan per batch (sebelumnya 20)
+        const PROCESS_INTERVAL = 33;  // Percepat ke 33ms (sekitar 30 FPS)
+        
+        const MAX_QUEUE_SIZE = 500;   // Load Shedding tetap 500
+        // -------------------------------------------
+
         // PENTING: Ubah Set ID menjadi Map untuk melacak streak/count combo
         // Format: { 'msgId': lastKnownStreakCount }
         const processedGiftStreaks = new Map();
@@ -1041,6 +1058,12 @@
             gifterScrollInterval = startAutoScroll('top-gifters-list', gifterScrollInterval);
             
             startInfoTicker();
+
+            // Jalankan pemroses antrian chat dengan interval baru (lebih cepat)
+            setInterval(processChatQueue, PROCESS_INTERVAL);
+            
+            // Interval untuk update indikator ping visual
+            setInterval(updateConnectionHealthUI, 1000);
         }
 
         function showPage(pageName) {
@@ -1661,24 +1684,91 @@
             }, 30);
         }
         
+        // --- LOGIKA BARU: MENANGANI KOMENTAR DENGAN ANTRIAN ---
         function handleComment(msg) {
+            // Masukkan ke antrian dulu, jangan langsung diproses
+            if (chatQueue.length < MAX_QUEUE_SIZE) {
+                chatQueue.push(msg);
+            } else {
+                // Jika antrian penuh sesak (lag parah), skip komentar lama agar memori aman
+                // Tapi prioritaskan jika komentar sama dengan jawaban (untuk mencegah skip pemenang)
+                const currentAnswer = levelData[gameState.currentLevelIndex]?.words[gameState.nextSlotToGuess];
+                
+                // PRIORITAS TINGGI: Pemenang selalu masuk antrian meski penuh
+                if (currentAnswer && msg.comment.trim().toUpperCase().replace(/\s+/g, '') === currentAnswer) {
+                     chatQueue.push(msg); 
+                }
+            }
+            
+            // Efek visual dot berkedip saat ada data masuk (supaya host tau data mengalir)
+            const dot = document.getElementById('ping-dot');
+            if (dot) {
+                dot.classList.remove('bg-green-500', 'bg-slate-400');
+                dot.classList.add('bg-green-400');
+                setTimeout(() => dot.classList.remove('bg-green-400'), 100);
+            }
+        }
+
+        // Fungsi ini dipanggil setInterval setiap 33ms
+        function processChatQueue() {
+            if (chatQueue.length === 0 || !gameState.isGameActive) return;
+
+            // Ambil potongan chat (batching) yang lebih besar
+            const batch = chatQueue.splice(0, CHAT_PROCESS_RATE);
+
+            batch.forEach(msg => {
+                processSingleComment(msg);
+            });
+        }
+        
+        function updateConnectionHealthUI() {
+            const dot = document.getElementById('ping-dot');
+            const queueText = document.getElementById('queue-count');
+            if (!dot || !queueText) return;
+
+            // Update angka antrian (debugging untuk host)
+            queueText.textContent = chatQueue.length > 99 ? '99+' : chatQueue.length;
+            
+            // Indikator warna berdasarkan kesehatan antrian
+            if (currentConnection) {
+                if (chatQueue.length > 100) {
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"; // Warning antrian numpuk
+                } else {
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-green-500"; // Sehat
+                }
+            } else {
+                dot.className = "w-2.5 h-2.5 rounded-full bg-red-500"; // Putus
+            }
+        }
+
+        function processSingleComment(msg) {
             if (disconnectNotification && !disconnectNotification.classList.contains('hidden')) disconnectNotification.classList.add('hidden'); 
             if (headerReconnectBtn && !headerReconnectBtn.classList.contains('hidden')) headerReconnectBtn.classList.add('hidden'); 
             const msgId = msg.msgId || msg.id; 
             if (msgId) {
                 if (processedChatIds.has(msgId)) return; 
                 processedChatIds.add(msgId);
-                if (processedChatIds.size > 200) { const first = processedChatIds.values().next().value; processedChatIds.delete(first); }
+                // Bersihkan ID lama lebih agresif untuk hemat memori
+                if (processedChatIds.size > 500) { 
+                    const iterator = processedChatIds.values();
+                    for(let i=0; i<100; i++) processedChatIds.delete(iterator.next().value);
+                }
             }
             const comment = msg.comment.trim().toUpperCase().replace(/\s+/g, '');
             const isHost = (currentConnection && msg.uniqueId && currentConnection.uniqueId && msg.uniqueId.toLowerCase() === currentConnection.uniqueId.toLowerCase()) || (msg.uniqueId === 'simulator_user_id');
             
-            if (!gameState.isGameActive) return;
+            // Logika Game Lama Dipindahkan ke sini
             if (comment === '!RESET' && isHost) { loadLevel(gameState.currentLevelIndex, true); return; }
             if (comment === '!MYRANK') {
                 const uid = msg.uniqueId; const user = gameState.leaderboard[uid];
-                if (!user) { createToast(`<div class="flex items-center gap-3"><div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white border border-white/30"><i data-lucide="user-x" class="w-5 h-5"></i></div><div class="flex-grow"><p class="font-bold text-white text-sm">Belum Ada Rank</p><p class="text-xs text-blue-100">Ayo main biar masuk leaderboard!</p></div></div>`, 'system'); lucide.createIcons(); return; }
-                const sortedPlayers = Object.entries(gameState.leaderboard).sort(([, a], [, b]) => b.score - a.score);
+                if (!user) { 
+                    // Throttle toast !myrank (jangan spam kalau ramai)
+                    if(Math.random() > 0.7) return; 
+                    createToast(`<div class="flex items-center gap-3"><div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white border border-white/30"><i data-lucide="user-x" class="w-5 h-5"></i></div><div class="flex-grow"><p class="font-bold text-white text-sm">Belum Ada Rank</p><p class="text-xs text-blue-100">Ayo main biar masuk leaderboard!</p></div></div>`, 'system'); lucide.createIcons(); 
+                    return; 
+                }
+                // ... (Logika MyRank sama seperti sebelumnya) ...
+                 const sortedPlayers = Object.entries(gameState.leaderboard).sort(([, a], [, b]) => b.score - a.score);
                 const rankIndex = sortedPlayers.findIndex(([id]) => id === uid); const rank = rankIndex + 1; const isTop3 = rank <= 3;
                 createToast(`<div class="flex items-center gap-3 w-full"><div class="relative flex-shrink-0"><img src="${user.profilePic || 'https://placehold.co/40x40/94A3B8/FFFFFF?text=?'}" class="w-12 h-12 rounded-full border-2 ${isTop3 ? 'border-yellow-300' : 'border-white'} shadow-md object-cover"><div class="absolute -bottom-1 -right-1 ${isTop3 ? 'bg-yellow-500' : 'bg-slate-700'} text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white shadow-sm">#${rank}</div></div><div class="flex-grow min-w-0 overflow-hidden"><p class="font-bold text-white text-sm truncate">${user.nickname.replace(/</g,"&lt;")}</p><div class="flex items-center gap-2 text-xs text-blue-50 mt-0.5"><span class="bg-black/20 px-1.5 py-0.5 rounded font-mono font-bold">${user.score} PTS</span>${user.coins > 0 ? `<span class="flex items-center gap-0.5 text-yellow-300 font-bold"><i data-lucide="coins" class="w-3 h-3"></i> ${user.coins}</span>` : ''}</div></div>${isTop3 ? '<i data-lucide="crown" class="w-5 h-5 text-yellow-300 animate-bounce-slow flex-shrink-0"></i>' : ''}</div>`,'system');
                 lucide.createIcons(); return;
@@ -1711,7 +1801,12 @@
                 }
             } else { 
                 if (!gameState.isRoundClosing && !gameState.revealedWords.filter(d=>d).map(d=>d.word).includes(comment)) {
-                    showIncorrectToast(msg); 
+                    // Batasi toast salah lebih ketat jika antrian sedang ramai (>50) agar UI tetap smooth
+                    // Jika antrian sepi (<10), tampilkan semua error
+                    const threshold = chatQueue.length > 50 ? 0 : 10;
+                    if (chatQueue.length <= threshold) {
+                        showIncorrectToast(msg); 
+                    }
                 }
             }
         }
