@@ -1000,8 +1000,13 @@
         let giftQueue = [];
         let isGiftOverlayShowing = false;
         
+        // PENTING: Ubah Set ID menjadi Map untuk melacak streak/count combo
+        // Format: { 'msgId': lastKnownStreakCount }
+        const processedGiftStreaks = new Map();
+        
         const processedChatIds = new Set();
-        const processedGiftIds = new Set();
+        // processedGiftIds tidak lagi dipakai karena diganti processedGiftStreaks
+        // const processedGiftIds = new Set(); 
 
         function init() {
             setupGlobalListeners();
@@ -1500,38 +1505,100 @@
 
         function handleGift(data) {
             if (!gameState.isGameActive) return;
-            const currentGiftId = data.giftId || data.msgId || data.msg_id || data.id;
-            if (currentGiftId) {
-                if (processedGiftIds.has(currentGiftId)) { console.log("Duplicate Gift detected & skipped:", currentGiftId); return; }
-                processedGiftIds.add(currentGiftId);
-                if (processedGiftIds.size > 500) { const iterator = processedGiftIds.values(); processedGiftIds.delete(iterator.next().value); }
+            
+            // --- LOGIKA BARU UNTUK MENANGANI COMBO/STREAK ---
+            const giftId = data.giftId || data.msgId || data.msg_id || data.id;
+            const repeatCount = data.repeatCount || data.repeat_count || 1; // Posisi streak saat ini (misal: mawar ke-5)
+            const diamondsPerItem = data.diamondCount || (data.extendedGiftInfo ? data.extendedGiftInfo.diamond_count : 0) || 1;
+            
+            let effectiveCoinsToAdd = 0;
+
+            if (giftId) {
+                const lastCount = processedGiftStreaks.get(giftId) || 0;
+                
+                // Jika ini adalah update dari gift yang sama (Combo sedang berjalan)
+                if (repeatCount > lastCount) {
+                    // Hitung selisihnya. Contoh: Tadi 5, sekarang 8. Berarti nambah 3 item.
+                    const addedItems = repeatCount - lastCount;
+                    effectiveCoinsToAdd = addedItems * diamondsPerItem;
+                    
+                    // Update tracker
+                    processedGiftStreaks.set(giftId, repeatCount);
+                } else if (repeatCount === lastCount) {
+                    // Duplikat persis, abaikan
+                    return; 
+                } else {
+                    // Gift ID baru atau reset
+                    effectiveCoinsToAdd = repeatCount * diamondsPerItem;
+                    processedGiftStreaks.set(giftId, repeatCount);
+                }
+
+                // Bersihkan memori jika map terlalu besar
+                if (processedGiftStreaks.size > 500) { 
+                    const firstKey = processedGiftStreaks.keys().next().value; 
+                    processedGiftStreaks.delete(firstKey); 
+                }
+            } else {
+                // Fallback jika tidak ada ID (jarang terjadi)
+                effectiveCoinsToAdd = diamondsPerItem;
             }
-            const diamonds = data.diamondCount || (data.extendedGiftInfo ? data.extendedGiftInfo.diamond_count : 0) || 1;
+            
+            // --- AKHIR LOGIKA COMBO ---
+
             const giftName = data.giftName || 'Hadiah';
             const { uniqueId, nickname, profilePictureUrl } = data;
             
              if (!gameState.topGifters[uniqueId]) gameState.topGifters[uniqueId] = { totalDiamonds: 0, nickname, profilePictureUrl };
-            gameState.topGifters[uniqueId].totalDiamonds += diamonds; gameState.topGifters[uniqueId].nickname = nickname; gameState.topGifters[uniqueId].profilePictureUrl = profilePictureUrl;
+            gameState.topGifters[uniqueId].totalDiamonds += effectiveCoinsToAdd; // Gunakan effectiveCoins
+            gameState.topGifters[uniqueId].nickname = nickname; 
+            gameState.topGifters[uniqueId].profilePictureUrl = profilePictureUrl;
+            
             saveTopGifters(); renderTopGifters();
+            
             if (!gameState.leaderboard[uniqueId]) { gameState.leaderboard[uniqueId] = { score: 0, coins: 0, nickname: nickname, profilePic: profilePictureUrl }; }
-            gameState.leaderboard[uniqueId].coins = (gameState.leaderboard[uniqueId].coins || 0) + diamonds;
+            gameState.leaderboard[uniqueId].coins = (gameState.leaderboard[uniqueId].coins || 0) + effectiveCoinsToAdd;
             gameState.leaderboard[uniqueId].nickname = nickname; gameState.leaderboard[uniqueId].profilePic = profilePictureUrl; saveLeaderboard(); 
             
             lucide.createIcons();
-            giftQueue.push({ nickname, profilePictureUrl, giftName, uniqueId });
+            
+            // Masukkan ke antrian visual gift overlay
+            // Kita push hanya 1 notifikasi visual per batch agar layar tidak penuh
+            giftQueue.push({ nickname, profilePictureUrl, giftName, uniqueId, amount: effectiveCoinsToAdd });
             processGiftQueue();
             
+            // --- LOGIKA BUKA HURUF (1 KOIN = 1 HURUF) ---
             if (gameState.isGameActive && !gameState.isLevelComplete && gameState.nextSlotToGuess !== -1) {
                 const correctWord = levelData[gameState.currentLevelIndex].words[gameState.nextSlotToGuess];
                 const lettersToFind = correctWord.slice(1).split(''); 
-                const unrevealedLetters = [...new Set(lettersToFind.filter(l => !gameState.currentHints.includes(l)))];
-                if (unrevealedLetters.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * unrevealedLetters.length);
-                    const newHintLetter = unrevealedLetters[randomIndex];
-                    gameState.currentHints.push(newHintLetter); 
+                
+                // Cari huruf yang belum terbuka
+                let unrevealedLetters = lettersToFind.filter(l => !gameState.currentHints.includes(l));
+                
+                // Batasi maksimal buka huruf sekaligus (misal max 5 agar tidak instan kelar)
+                // Jika ingin unlimited, hapus Math.min(..., 5)
+                const lettersToRevealCount = Math.min(effectiveCoinsToAdd, unrevealedLetters.length, 10); 
+                
+                if (lettersToRevealCount > 0) {
+                    const newHintsAdded = [];
+                    
+                    for (let i = 0; i < lettersToRevealCount; i++) {
+                        // Refresh unrevealed list di setiap loop agar tidak ambil duplikat
+                        unrevealedLetters = lettersToFind.filter(l => !gameState.currentHints.includes(l));
+                        if (unrevealedLetters.length === 0) break;
+
+                        const randomIndex = Math.floor(Math.random() * unrevealedLetters.length);
+                        const newHintLetter = unrevealedLetters[randomIndex];
+                        
+                        gameState.currentHints.push(newHintLetter);
+                        newHintsAdded.push(newHintLetter);
+                    }
+                    
                     saveState(); 
                     renderSingleSlot(gameState.nextSlotToGuess, null);
-                    createToast(`<img src="${profilePictureUrl||'https://placehold.co/40x40/A855F7/FFFFFF?text=G'}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" onerror="this.src='https://placehold.co/40x40/A855F7/FFFFFF?text=G'"><div class="flex-grow overflow-hidden"><p class="font-bold text-white truncate text-shadow-sm">${(nickname||'Sultan').replace(/</g,"&lt;")}</p><p class="text-sm text-purple-100 font-medium">Kirim Gift! Huruf '${newHintLetter}' terbuka!</p></div>`, 'system');
+                    
+                    // Toast Notifikasi
+                    const hintListStr = newHintsAdded.join(', ');
+                    createToast(`<img src="${profilePictureUrl||'https://placehold.co/40x40/A855F7/FFFFFF?text=G'}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" onerror="this.src='https://placehold.co/40x40/A855F7/FFFFFF?text=G'"><div class="flex-grow overflow-hidden"><p class="font-bold text-white truncate text-shadow-sm">${(nickname||'Sultan').replace(/</g,"&lt;")}</p><p class="text-sm text-purple-100 font-medium">Gift ${effectiveCoinsToAdd} Koin! Buka: <span class="font-bold text-yellow-300">${hintListStr}</span></p></div>`, 'system');
                 }
             }
             if (gameState.isLevelComplete && !isProcessingWin) { nextLevelProgress = NEXT_LEVEL_TARGET_LIKES; updateNextLevelProgress(); }
