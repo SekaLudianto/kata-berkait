@@ -632,7 +632,8 @@
     </div>
 
     <div id="gift-overlay" class="fixed top-24 left-1/2 -translate-x-1/2 z-[80] pointer-events-none hidden">
-        <div id="gift-card" class="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-2xl border-2 border-purple-400 flex flex-col items-center text-center min-w-[250px] transform transition-all">
+        <!-- HAPUS backdrop-blur-md dan bg-white/95, GANTI dengan bg-white solid agar tidak kedip -->
+        <div id="gift-card" class="bg-white p-4 rounded-2xl shadow-2xl border-2 border-purple-400 flex flex-col items-center text-center min-w-[250px] transform transition-all">
             <div class="relative mb-2">
                 <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-75 animate-pulse"></div>
                 <img id="gift-user-pic" src="" class="relative w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" onerror="this.src='https://placehold.co/80x80/A855F7/FFFFFF?text=G'">
@@ -1647,8 +1648,32 @@
             isGiftOverlayShowing = true; const giftData = giftQueue.shift();
             giftUserPic.src = giftData.profilePictureUrl; giftUserName.textContent = giftData.nickname; giftNameEl.textContent = giftData.giftName; giftUserFollow.textContent = `@${giftData.uniqueId}`;
             giftOverlay.classList.remove('hidden'); giftCard.classList.remove('gift-out'); giftCard.classList.add('gift-in');
-            setTimeout(() => { confetti({ particleCount: 150, spread: 100, origin: { y: 0.3 }, colors: ['#A855F7', '#EC4899', '#FBBF24'] }); }, 500);
-            setTimeout(() => { giftCard.classList.remove('gift-in'); giftCard.classList.add('gift-out'); setTimeout(() => { giftOverlay.classList.add('hidden'); isGiftOverlayShowing = false; processGiftQueue(); }, 500); }, 4000); 
+            
+            // --- OPTIMISASI CONFETTI AGAR TIDAK KEDIP ---
+            setTimeout(() => { 
+                try {
+                    confetti({ 
+                        particleCount: 50,    // Kurangi partikel (150 -> 50) agar ringan
+                        spread: 60,           // Sebaran lebih kecil agar fokus
+                        origin: { y: 0.4 }, 
+                        colors: ['#A855F7', '#EC4899', '#FBBF24'],
+                        disableForReducedMotion: true, // Hormati setting hemat daya HP
+                        zIndex: 9999,         // Pastikan di atas layer apapun
+                        scalar: 1.2           // Ukuran confetti sedikit lebih besar
+                    }); 
+                } catch(e) { console.warn("Confetti error:", e); }
+            }, 300);
+            
+            // Durasi dipercepat jadi 3000ms (3 detik) agar antrian tidak numpuk
+            setTimeout(() => { 
+                giftCard.classList.remove('gift-in'); 
+                giftCard.classList.add('gift-out'); 
+                setTimeout(() => { 
+                    giftOverlay.classList.add('hidden'); 
+                    isGiftOverlayShowing = false; 
+                    processGiftQueue(); 
+                }, 500); 
+            }, 3000); 
         }
 
         function renderTopLikers() {
