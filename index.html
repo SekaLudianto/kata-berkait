@@ -19,13 +19,69 @@
         body {
             font-family: 'Inter', 'Poppins', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
             overscroll-behavior: none;
-            /* Tema biru cerah */
-            background: linear-gradient(135deg, #0052D4, #4364F7, #6FB1FC);
-            background-size: cover;
+            /* UPDATE: Background Animasi (Anti-Static) */
+            background: linear-gradient(-45deg, #0052D4, #4364F7, #6FB1FC, #1cb5e0);
+            background-size: 400% 400%;
+            animation: gradient-bg 15s ease infinite;
             height: 100vh;
             overflow: hidden;
+            position: relative;
         }
         
+        /* === ANIMASI ANTI-STATIC === */
+        
+        /* 1. Background Gradient Shift */
+        @keyframes gradient-bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 2. Floating Particles (Background Movement) */
+        .circles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0; /* Paling belakang */
+            pointer-events: none;
+        }
+        .circles li {
+            position: absolute;
+            display: block;
+            list-style: none;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            animation: animate-circles 25s linear infinite;
+            bottom: -150px;
+            border-radius: 20%; 
+        }
+        /* Konfigurasi tiap partikel beda ukuran & kecepatan */
+        .circles li:nth-child(1){ left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+        .circles li:nth-child(2){ left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+        .circles li:nth-child(3){ left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+        .circles li:nth-child(4){ left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
+        .circles li:nth-child(5){ left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
+        .circles li:nth-child(6){ left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+        .circles li:nth-child(7){ left: 35%; width: 150px; height: 150px; animation-delay: 7s; }
+        .circles li:nth-child(8){ left: 50%; width: 25px; height: 25px; animation-delay: 15s; animation-duration: 45s; }
+        .circles li:nth-child(9){ left: 20%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 35s; }
+        .circles li:nth-child(10){ left: 85%; width: 150px; height: 150px; animation-delay: 0s; animation-duration: 11s; }
+
+        @keyframes animate-circles {
+            0%{ transform: translateY(0) rotate(0deg); opacity: 0.8; border-radius: 10%; }
+            100%{ transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; }
+        }
+
+        /* 3. Slot Breathing (Kotak Jawaban Bernapas) */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.5); }
+            50% { transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.7); }
+        }
+
         /* Animasi "pop" untuk kata baru */
         @keyframes pop {
             0% { transform: scale(0.8); opacity: 0; }
@@ -60,6 +116,8 @@
         .slot-active-box {
             background-color: #FEF3C7; /* bg-amber-100 */
             border-color: #FCD34D; /* border-amber-300 */
+            /* UPDATE: Tambah animasi breathe supaya selalu gerak */
+            animation: breathe 3s ease-in-out infinite;
         }
         
         /* Gaya untuk slot terkunci */
@@ -214,11 +272,17 @@
 
 <body class="text-slate-900">
 
+    <!-- UPDATE: Elemen Partikel Melayang (Background Anti-Static) -->
+    <ul class="circles">
+        <li></li><li></li><li></li><li></li><li></li>
+        <li></li><li></li><li></li><li></li><li></li>
+    </ul>
+
     <!-- ============================================= -->
     <!--     LAYAR LOGIN                               -->
     <!-- ============================================= -->
     <div id="login-screen" class="w-full min-h-screen p-6 flex items-center justify-center overflow-y-auto absolute inset-0 z-50 bg-gradient-to-br from-blue-600 to-blue-400">
-        <main class="max-w-md w-full mx-auto space-y-8 bg-white/90 backdrop-blur-md p-8 sm:p-10 rounded-3xl shadow-2xl border-2 border-white/50 transform transition-all">
+        <main class="max-w-md w-full mx-auto space-y-8 bg-white/90 backdrop-blur-md p-8 sm:p-10 rounded-3xl shadow-2xl border-2 border-white/50 transform transition-all relative z-10">
             <header class="text-center">
                 <h1 class="text-5xl font-bold text-blue-800 mb-2 font-bangers tracking-wider text-shadow-lg">HOST ACCESS</h1>
                 <p class="text-xl text-slate-700 font-semibold">Kata Berkait LIVE</p>
@@ -229,14 +293,12 @@
                     <label for="login-username" class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
                         <i data-lucide="user" class="w-4 h-4 text-blue-600"></i> Username
                     </label>
-                    <!-- HAPUS value="Arsenic" di sini -->
                     <input type="text" id="login-username" placeholder="Masukkan username" class="w-full bg-slate-100 text-slate-900 border-2 border-slate-300 rounded-xl px-4 py-3 focus:ring-4 focus:ring-blue-500/50 focus:border-blue-500 transition-all outline-none text-lg" required>
                 </div>
                 <div>
                     <label for="login-password" class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
                         <i data-lucide="lock" class="w-4 h-4 text-blue-600"></i> Password
                     </label>
-                    <!-- HAPUS value="Darman26" di sini -->
                     <input type="password" id="login-password" placeholder="Masukkan password" class="w-full bg-slate-100 text-slate-900 border-2 border-slate-300 rounded-xl px-4 py-3 focus:ring-4 focus:ring-blue-500/50 focus:border-blue-500 transition-all outline-none text-lg" required>
                 </div>
                 
@@ -253,7 +315,7 @@
     <!--     LAYAR HOME (KONEKSI & SETTING)            -->
     <!-- ============================================= -->
     <div id="home-screen" class="w-full min-h-screen p-4 flex items-center justify-center overflow-y-auto hidden absolute inset-0 z-40 bg-gradient-to-br from-blue-600 to-blue-400">
-        <main class="max-w-md w-full mx-auto space-y-6 bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-2xl border border-white/30 my-8">
+        <main class="max-w-md w-full mx-auto space-y-6 bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-2xl border border-white/30 my-8 relative z-10">
             <header class="text-center">
                 <h1 class="text-4xl font-bold text-blue-800 mb-2 font-bangers tracking-wider text-shadow-lg">Pengaturan Host</h1>
                 <p class="text-md text-slate-600 font-medium">Hubungkan LIVE dan Pilih Level</p>
@@ -391,6 +453,17 @@
                                 <i data-lucide="gift" class="w-3 h-3"></i> Reset Gifts
                             </button>
                         </div>
+                    </div>
+
+                    <!-- UPDATE: Tombol Import/Export Ranking -->
+                    <div class="flex gap-2 mt-2 pt-2 border-t border-slate-200">
+                        <button data-action="export-leaderboard" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1 transition-colors border border-teal-500 shadow-sm">
+                            <i data-lucide="download" class="w-3 h-3"></i> Export Rank
+                        </button>
+                        <button data-action="import-leaderboard-trigger" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1 transition-colors border border-indigo-500 shadow-sm">
+                            <i data-lucide="upload" class="w-3 h-3"></i> Import Rank
+                        </button>
+                        <input type="file" id="import-leaderboard-input" accept=".json" class="hidden">
                     </div>
 
                     <div id="level-update-status" class="text-center text-sm text-slate-600 h-auto min-h-[1.25rem] break-words"></div>
@@ -535,7 +608,7 @@
             </div>
 
             <!-- Daftar Kata -->
-            <div id="word-list-container" class="w-full max-w-md space-y-3.5 overflow-y-auto pr-2 py-2 mask-image-linear-gradient flex-1 relative">
+            <div id="word-list-container" class="w-full max-w-md space-y-3.5 overflow-y-auto pr-2 py-2 mask-image-linear-gradient flex-1 relative z-10">
                 <!-- Slot kata di-generate oleh JS -->
             </div>
         </main>
@@ -768,6 +841,9 @@
                 const eventData = dataPackage.data;
                 if (!event || !eventData) return;
 
+                // [FIX DEDUPLICATION] Hapus logic generateStableId yang pakai time bucket.
+                // Kita kirim raw data saja, biar handleGift yang memproses deduplikasi dengan strict.
+                
                 switch (event) {
                     case 'chat':
                         this.emit('chat', {
@@ -775,7 +851,7 @@
                             uniqueId: eventData.uniqueId || 'indofinity_user',
                             nickname: eventData.nickname || 'Pengguna IndoFinity',
                             profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/0052D4/FFFFFF?text=I',
-                            msgId: eventData.msgId || Date.now().toString() 
+                            msgId: eventData.msgId || eventData.id || Date.now().toString() 
                         });
                         break;
                     case 'like':
@@ -783,7 +859,8 @@
                             uniqueId: eventData.uniqueId || 'indofinity_user',
                             nickname: eventData.nickname || 'Pengguna IndoFinity',
                             profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/0052D4/FFFFFF?text=I',
-                            likeCount: eventData.count || eventData.likeCount || 1 
+                            likeCount: eventData.count || eventData.likeCount || 1,
+                            msgId: eventData.msgId || eventData.id // Pass msgId for dedup
                         });
                         break;
                     case 'gift':
@@ -793,7 +870,9 @@
                             profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/A855F7/FFFFFF?text=G',
                             diamondCount: eventData.diamondCount || (eventData.extendedGiftInfo ? eventData.extendedGiftInfo.diamond_count : 0) || 0,
                             giftName: eventData.giftName || 'TikTok Gift',
-                            giftId: eventData.msgId || eventData.id || Date.now().toString(),
+                            repeatCount: eventData.repeatCount || eventData.repeat_count || 1,
+                            giftId: eventData.giftId || eventData.gift_id || eventData.msgId || eventData.id, // Prefer giftId specific
+                            msgId: eventData.msgId || eventData.id, // Important for packet dedup
                             extendedGiftInfo: eventData.extendedGiftInfo
                         });
                         break;
@@ -804,7 +883,8 @@
                             profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/A855F7/FFFFFF?text=G',
                             diamondCount: eventData.amount || 1, 
                             giftName: eventData.message || eventData.eventName || event,
-                            giftId: eventData.id || (Date.now() + '_' + Math.random()) 
+                            // ID Stabil untuk donasi
+                            msgId: eventData.id || `${eventData.sender}_${eventData.amount}_${(eventData.message||'').substring(0,10)}`
                         });
                         break;
                 }
@@ -838,14 +918,16 @@
             handleIndoFinityMessage(dataPackage) {
                 const event = dataPackage.event; const eventData = dataPackage.data;
                 if (!event || !eventData) return;
+                
+                // [FIX] Sama seperti WS, hapus time bucket. Kirim raw data.
                 switch (event) {
                     case 'chat':
                         this.emit('chat', {
-                            comment: eventData.comment || '', uniqueId: eventData.uniqueId || 'indofinity_user', nickname: eventData.nickname || 'Pengguna IndoFinity', profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/0052D4/FFFFFF?text=I', msgId: eventData.msgId || Date.now().toString()
+                            comment: eventData.comment || '', uniqueId: eventData.uniqueId || 'indofinity_user', nickname: eventData.nickname || 'Pengguna IndoFinity', profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/0052D4/FFFFFF?text=I', msgId: eventData.msgId || eventData.id || Date.now().toString()
                         }); break;
                     case 'like':
                         this.emit('like', {
-                            uniqueId: eventData.uniqueId || 'indofinity_user', nickname: eventData.nickname || 'Pengguna IndoFinity', profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/0052D4/FFFFFF?text=I', likeCount: eventData.count || 1 
+                            uniqueId: eventData.uniqueId || 'indofinity_user', nickname: eventData.nickname || 'Pengguna IndoFinity', profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/0052D4/FFFFFF?text=I', likeCount: eventData.count || 1, msgId: eventData.msgId || eventData.id
                         }); break;
                     case 'gift':
                         this.emit('gift', {
@@ -854,13 +936,16 @@
                             profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/A855F7/FFFFFF?text=G',
                             diamondCount: eventData.diamondCount || (eventData.extendedGiftInfo ? eventData.extendedGiftInfo.diamond_count : 0) || 0,
                             giftName: eventData.giftName || 'TikTok Gift',
-                            giftId: eventData.msgId || eventData.id || Date.now().toString(),
+                            repeatCount: eventData.repeatCount || eventData.repeat_count || 1, 
+                            giftId: eventData.giftId || eventData.gift_id || eventData.msgId || eventData.id,
+                            msgId: eventData.msgId || eventData.id,
                             extendedGiftInfo: eventData.extendedGiftInfo
                         });
                         break;
                     case 'sociabuzz': case 'saweria': case 'trakteer': case 'tako': case 'bagibagi': case 'sibagi':
                         this.emit('gift', {
-                            uniqueId: eventData.uniqueId || eventData.sender || 'indofinity_sultan', nickname: eventData.nickname || eventData.sender || 'Sultan Donasi', profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/A855F7/FFFFFF?text=G', diamondCount: eventData.amount || 1, giftName: eventData.message || eventData.eventName || event, giftId: eventData.id || (Date.now() + '_' + Math.random())
+                            uniqueId: eventData.uniqueId || eventData.sender || 'indofinity_sultan', nickname: eventData.nickname || eventData.sender || 'Sultan Donasi', profilePictureUrl: eventData.profilePictureUrl || 'https://placehold.co/40x40/A855F7/FFFFFF?text=G', diamondCount: eventData.amount || 1, giftName: eventData.message || eventData.eventName || event, 
+                            msgId: eventData.id || `${eventData.sender}_${eventData.amount}_${(eventData.message||'').substring(0,10)}`
                         }); break;
                 }
             }
@@ -933,7 +1018,6 @@
         let isProcessingWin = false;
         let isReconnecting = false; 
         let currentConnection = null; 
-        let lastProcessedGiftId = null; 
         let lastConnectedUsername = null; 
         let likerScrollInterval = null; 
         let gifterScrollInterval = null;
@@ -1020,14 +1104,14 @@
         const MAX_QUEUE_SIZE = 500;   // Load Shedding tetap 500
         // -------------------------------------------
 
-        // PENTING: Ubah Set ID menjadi Map untuk melacak streak/count combo
-        // Format: { 'msgId': lastKnownStreakCount }
-        const processedGiftStreaks = new Map();
+        // [FIX DEDUPLICATION GLOBAL] 
+        // Melacak ID Paket yang masuk untuk mencegah double firing dari socket
+        const processedPacketIds = new Set();
         
-        const processedChatIds = new Set();
-        // processedGiftIds tidak lagi dipakai karena diganti processedGiftStreaks
-        // const processedGiftIds = new Set(); 
-
+        // [FIX GIFT STREAK]
+        // Melacak streak berdasarkan: UserID + GiftName
+        const streakTracker = new Map();
+        
         function init() {
             setupGlobalListeners();
             loadGitHubConfig();
@@ -1067,6 +1151,18 @@
             
             // Interval untuk update indikator ping visual
             setInterval(updateConnectionHealthUI, 1000);
+            
+            // [FIX] Cleanup Packet IDs secara berkala
+            setInterval(() => {
+                if(processedPacketIds.size > 2000) {
+                    const it = processedPacketIds.values();
+                    for(let i=0; i<1000; i++) processedPacketIds.delete(it.next().value);
+                }
+                if(streakTracker.size > 2000) {
+                     const it = streakTracker.keys();
+                     for(let i=0; i<500; i++) streakTracker.delete(it.next().value);
+                }
+            }, 60000); // Tiap 1 menit
         }
 
         function showPage(pageName) {
@@ -1188,14 +1284,75 @@
                     case 'reset-leaderboard': showConfirm('Reset Papan Peringkat? Semua skor akan hilang.', () => { resetLeaderboard(); createToast('<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-blue-100">Papan Peringkat Direset!</p></div>', 'system'); }, 'Reset Skor?'); break;
                     case 'reset-top-likers': showConfirm('Reset Top Likers?', () => { resetTopLikers(); createToast('<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-blue-100">Top Likers Direset!</p></div>', 'system'); }); break;
                     case 'reset-top-gifters': showConfirm('Reset Top Gifters?', () => { resetTopGifters(); createToast('<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-blue-100">Top Gifters Direset!</p></div>', 'system'); }); break;
+                    
+                    // UPDATE: Handler Tombol Export & Import
+                    case 'export-leaderboard': exportLeaderboard(); break;
+                    case 'import-leaderboard-trigger': 
+                        const fileInput = document.getElementById('import-leaderboard-input');
+                        if (fileInput) fileInput.click(); 
+                        break;
                 }
             });
             if (simCommentInput) simCommentInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); document.querySelector('[data-action="sim-send"]').click(); } });
             if (csvFileInput) csvFileInput.addEventListener('change', handleCSVUpload);
+            // UPDATE: Event Listener untuk File Input Import Ranking
+            const importInput = document.getElementById('import-leaderboard-input');
+            if (importInput) importInput.addEventListener('change', handleLeaderboardImport);
+            
             if (stageSelect) stageSelect.addEventListener('change', () => { populateLevelSelect(); if (levelSelect.value) { gameState.currentLevelIndex = parseInt(levelSelect.value, 10); } updateHomeUI(); }); 
             if (levelSelect) levelSelect.addEventListener('change', (e) => { gameState.currentLevelIndex = parseInt(e.target.value, 10); updateHomeUI(); });
             if (confirmYes) { confirmYes.addEventListener('click', () => { if (onConfirmCallback) { onConfirmCallback(); } onConfirmCallback = null; confirmModal.classList.add('hidden'); }); }
             if (confirmNo) { confirmNo.addEventListener('click', () => { onConfirmCallback = null; confirmModal.classList.add('hidden'); }); }
+        }
+
+        // --- FUNGSI EXPORT & IMPORT BARU ---
+        
+        function exportLeaderboard() {
+            if (!gameState.leaderboard || Object.keys(gameState.leaderboard).length === 0) {
+                 createToast('<div class="flex-grow"><p class="font-bold text-white">Info</p><p class="text-sm text-blue-100">Leaderboard masih kosong.</p></div>', 'system');
+                 return;
+            }
+            
+            const dataStr = JSON.stringify(gameState.leaderboard, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            const date = new Date().toISOString().slice(0,10);
+            a.download = `kb_leaderboard_backup_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            createToast('<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-green-100">Leaderboard berhasil diekspor!</p></div>', 'system');
+        }
+
+        function handleLeaderboardImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    // Validasi sederhana: pastikan object
+                    if (typeof importedData !== 'object' || importedData === null) throw new Error("Format invalid");
+
+                    const count = Object.keys(importedData).length;
+                    
+                    showConfirm(`Timpa leaderboard saat ini dengan data dari file? (${count} pemain)`, () => {
+                        gameState.leaderboard = importedData;
+                        saveLeaderboard();
+                        createToast(`<div class="flex-grow"><p class="font-bold text-white">Sistem</p><p class="text-sm text-green-100">Berhasil import ${count} data pemain!</p></div>`, 'system');
+                    }, 'Import Data?');
+                } catch (err) {
+                    createToast('<div class="flex-grow"><p class="font-bold text-white">Error</p><p class="text-sm text-red-100">Gagal membaca file JSON. Pastikan format benar.</p></div>', 'incorrect');
+                }
+                event.target.value = ''; // Reset input agar bisa pilih file sama lagi
+            };
+            reader.readAsText(file);
         }
 
         function connectToServer(isManualReconnect = false) {
@@ -1453,7 +1610,7 @@
                 gameState.roundWinners = [];
                 gameState.levelScores = {}; // RESET SKOR LEVEL SETIAP LOAD LEVEL
                 
-                gameState.isLevelComplete = false; isProcessingWin = false; lastProcessedGiftId = null; gameState.currentHints = []; gameState.wordTimerRemaining = WORD_TIMER_DURATION; gameState.isAcceptingGuesses = false; 
+                gameState.isLevelComplete = false; isProcessingWin = false; gameState.currentHints = []; gameState.wordTimerRemaining = WORD_TIMER_DURATION; gameState.isAcceptingGuesses = false; 
                 gameState.revealedWords = new Array(level.words.length).fill(null);
                 (level.openSlots || [0]).forEach(index => { if (index < level.words.length) gameState.revealedWords[index] = { word: level.words[index], solver: { nickname: 'SISTEM', profilePic: 'https://placehold.co/40x40/94A3B8/FFFFFF?text=S' } }; });
                 gameState.nextSlotToGuess = gameState.revealedWords.findIndex(word => word === null);
@@ -1517,6 +1674,12 @@
         }
 
         function handleLike(data) {
+            // [FIX DEDUPLICATION] Packet ID Check
+            if (data.msgId) {
+                if (processedPacketIds.has(data.msgId)) return;
+                processedPacketIds.add(data.msgId);
+            }
+
             if (!gameState.isGameActive) return;
             const { uniqueId, nickname, profilePictureUrl, likeCount } = data;
             if (!gameState.topLikers[uniqueId]) gameState.topLikers[uniqueId] = { totalLikes: 0, nickname, profilePictureUrl };
@@ -1529,67 +1692,75 @@
             }
         }
 
+        // --- [MAJOR FIX] FUNGSI HANDLE GIFT DENGAN LOGIKA BARU ---
         function handleGift(data) {
+            // 1. Packet Deduplication (Level Network)
+            // Mencegah pesan JSON yang SAMA PERSIS diproses dua kali.
+            const packetId = data.msgId || data.id;
+            if (packetId) {
+                if (processedPacketIds.has(packetId)) {
+                    return; // Abaikan paket duplikat
+                }
+                processedPacketIds.add(packetId);
+            }
+
             if (!gameState.isGameActive) return;
             
-            // --- LOGIKA BARU UNTUK MENANGANI COMBO/STREAK ---
-            const giftId = data.giftId || data.msgId || data.msg_id || data.id;
-            const repeatCount = data.repeatCount || data.repeat_count || 1; // Posisi streak saat ini (misal: mawar ke-5)
-            const diamondsPerItem = data.diamondCount || (data.extendedGiftInfo ? data.extendedGiftInfo.diamond_count : 0) || 1;
+            // 2. Logic Combo/Streak (Level User)
+            // Menggunakan (User + GiftName) untuk melacak combo, karena giftId dari server sering berubah
+            const giftKey = `${data.uniqueId}_${data.giftName || 'Unknown'}`;
+            const repeatCount = parseInt(data.repeatCount || data.repeat_count || 1);
+            const diamondsPerItem = parseInt(data.diamondCount || (data.extendedGiftInfo ? data.extendedGiftInfo.diamond_count : 0) || 1);
             
-            let effectiveCoinsToAdd = 0;
+            let effectiveCountToAdd = 0;
 
-            if (giftId) {
-                const lastCount = processedGiftStreaks.get(giftId) || 0;
+            if (streakTracker.has(giftKey)) {
+                const lastCount = streakTracker.get(giftKey);
                 
-                // Jika ini adalah update dari gift yang sama (Combo sedang berjalan)
                 if (repeatCount > lastCount) {
-                    // Hitung selisihnya. Contoh: Tadi 5, sekarang 8. Berarti nambah 3 item.
-                    const addedItems = repeatCount - lastCount;
-                    effectiveCoinsToAdd = addedItems * diamondsPerItem;
-                    
-                    // Update tracker
-                    processedGiftStreaks.set(giftId, repeatCount);
-                } else if (repeatCount === lastCount) {
-                    // Duplikat persis, abaikan
-                    return; 
+                    // Combo berlanjut: Hitung selisihnya
+                    effectiveCountToAdd = repeatCount - lastCount;
+                    streakTracker.set(giftKey, repeatCount);
+                } else if (repeatCount <= lastCount && repeatCount === 1) {
+                    // Reset Combo (user kirim gift yang sama tapi streak baru dimulai dari 1)
+                    effectiveCountToAdd = repeatCount;
+                    streakTracker.set(giftKey, repeatCount);
                 } else {
-                    // Gift ID baru atau reset
-                    effectiveCoinsToAdd = repeatCount * diamondsPerItem;
-                    processedGiftStreaks.set(giftId, repeatCount);
-                }
-
-                // Bersihkan memori jika map terlalu besar
-                if (processedGiftStreaks.size > 500) { 
-                    const firstKey = processedGiftStreaks.keys().next().value; 
-                    processedGiftStreaks.delete(firstKey); 
+                    // Kasus Aneh: repeatCount turun tapi bukan 1, atau sama.
+                    // Biasanya ini duplikasi state lama yang telat masuk. Abaikan.
+                    return;
                 }
             } else {
-                // Fallback jika tidak ada ID (jarang terjadi)
-                effectiveCoinsToAdd = diamondsPerItem;
+                // Streak Baru / Gift Jenis Baru
+                effectiveCountToAdd = repeatCount;
+                streakTracker.set(giftKey, repeatCount);
             }
+
+            // Safety check
+            if (effectiveCountToAdd <= 0) return;
             
-            // --- AKHIR LOGIKA COMBO ---
+            const effectiveCoins = effectiveCountToAdd * diamondsPerItem;
+
+            // --- END LOGIC BARU ---
 
             const giftName = data.giftName || 'Hadiah';
             const { uniqueId, nickname, profilePictureUrl } = data;
             
              if (!gameState.topGifters[uniqueId]) gameState.topGifters[uniqueId] = { totalDiamonds: 0, nickname, profilePictureUrl };
-            gameState.topGifters[uniqueId].totalDiamonds += effectiveCoinsToAdd; // Gunakan effectiveCoins
+            gameState.topGifters[uniqueId].totalDiamonds += effectiveCoins;
             gameState.topGifters[uniqueId].nickname = nickname; 
             gameState.topGifters[uniqueId].profilePictureUrl = profilePictureUrl;
             
             saveTopGifters(); renderTopGifters();
             
             if (!gameState.leaderboard[uniqueId]) { gameState.leaderboard[uniqueId] = { score: 0, coins: 0, nickname: nickname, profilePic: profilePictureUrl }; }
-            gameState.leaderboard[uniqueId].coins = (gameState.leaderboard[uniqueId].coins || 0) + effectiveCoinsToAdd;
+            gameState.leaderboard[uniqueId].coins = (gameState.leaderboard[uniqueId].coins || 0) + effectiveCoins;
             gameState.leaderboard[uniqueId].nickname = nickname; gameState.leaderboard[uniqueId].profilePic = profilePictureUrl; saveLeaderboard(); 
             
             lucide.createIcons();
             
             // Masukkan ke antrian visual gift overlay
-            // Kita push hanya 1 notifikasi visual per batch agar layar tidak penuh
-            giftQueue.push({ nickname, profilePictureUrl, giftName, uniqueId, amount: effectiveCoinsToAdd });
+            giftQueue.push({ nickname, profilePictureUrl, giftName, uniqueId, amount: effectiveCoins });
             processGiftQueue();
             
             // --- LOGIKA BUKA HURUF (1 KOIN = 1 HURUF) ---
@@ -1600,15 +1771,13 @@
                 // Cari huruf yang belum terbuka
                 let unrevealedLetters = lettersToFind.filter(l => !gameState.currentHints.includes(l));
                 
-                // Batasi maksimal buka huruf sekaligus (misal max 5 agar tidak instan kelar)
-                // Jika ingin unlimited, hapus Math.min(..., 5)
-                const lettersToRevealCount = Math.min(effectiveCoinsToAdd, unrevealedLetters.length, 10); 
+                // Batasi maksimal buka huruf sekaligus (misal max 10 agar tidak instan kelar)
+                const lettersToRevealCount = Math.min(effectiveCoins, unrevealedLetters.length, 10); 
                 
                 if (lettersToRevealCount > 0) {
                     const newHintsAdded = [];
                     
                     for (let i = 0; i < lettersToRevealCount; i++) {
-                        // Refresh unrevealed list di setiap loop agar tidak ambil duplikat
                         unrevealedLetters = lettersToFind.filter(l => !gameState.currentHints.includes(l));
                         if (unrevealedLetters.length === 0) break;
 
@@ -1624,7 +1793,7 @@
                     
                     // Toast Notifikasi
                     const hintListStr = newHintsAdded.join(', ');
-                    createToast(`<img src="${profilePictureUrl||'https://placehold.co/40x40/A855F7/FFFFFF?text=G'}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" onerror="this.src='https://placehold.co/40x40/A855F7/FFFFFF?text=G'"><div class="flex-grow overflow-hidden"><p class="font-bold text-white truncate text-shadow-sm">${(nickname||'Sultan').replace(/</g,"&lt;")}</p><p class="text-sm text-purple-100 font-medium">Gift ${effectiveCoinsToAdd} Koin! Buka: <span class="font-bold text-yellow-300">${hintListStr}</span></p></div>`, 'system');
+                    createToast(`<img src="${profilePictureUrl||'https://placehold.co/40x40/A855F7/FFFFFF?text=G'}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" onerror="this.src='https://placehold.co/40x40/A855F7/FFFFFF?text=G'"><div class="flex-grow overflow-hidden"><p class="font-bold text-white truncate text-shadow-sm">${(nickname||'Sultan').replace(/</g,"&lt;")}</p><p class="text-sm text-purple-100 font-medium">Gift ${effectiveCoins} Koin! Buka: <span class="font-bold text-yellow-300">${hintListStr}</span></p></div>`, 'system');
                 }
             }
             if (gameState.isLevelComplete && !isProcessingWin) { nextLevelProgress = NEXT_LEVEL_TARGET_LIKES; updateNextLevelProgress(); }
@@ -1771,16 +1940,13 @@
         function processSingleComment(msg) {
             if (disconnectNotification && !disconnectNotification.classList.contains('hidden')) disconnectNotification.classList.add('hidden'); 
             if (headerReconnectBtn && !headerReconnectBtn.classList.contains('hidden')) headerReconnectBtn.classList.add('hidden'); 
-            const msgId = msg.msgId || msg.id; 
-            if (msgId) {
-                if (processedChatIds.has(msgId)) return; 
-                processedChatIds.add(msgId);
-                // Bersihkan ID lama lebih agresif untuk hemat memori
-                if (processedChatIds.size > 500) { 
-                    const iterator = processedChatIds.values();
-                    for(let i=0; i<100; i++) processedChatIds.delete(iterator.next().value);
-                }
+            
+            // [FIX DEDUPLICATION] Packet ID Check untuk Chat
+            if (msg.msgId) {
+                if (processedPacketIds.has(msg.msgId)) return;
+                processedPacketIds.add(msg.msgId);
             }
+            
             const comment = msg.comment.trim().toUpperCase().replace(/\s+/g, '');
             const isHost = (currentConnection && msg.uniqueId && currentConnection.uniqueId && msg.uniqueId.toLowerCase() === currentConnection.uniqueId.toLowerCase()) || (msg.uniqueId === 'simulator_user_id');
             
