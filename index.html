@@ -17,7 +17,9 @@
         body {
             font-family: 'Inter', 'Poppins', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
             overscroll-behavior: none;
-            background: linear-gradient(-45deg, #0052D4, #4364F7, #6FB1FC, #1cb5e0);
+            /* Update: Gradasi Bawah Laut (Deep Ocean) */
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(180deg, #00c6ff 0%, #0072ff 100%); 
             background-size: 400% 400%;
             animation: gradient-bg 15s ease infinite;
             height: 100vh;
@@ -26,12 +28,13 @@
         }
         
         @keyframes gradient-bg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% { background-position: 50% 0%; }
+            50% { background-position: 50% 100%; }
+            100% { background-position: 50% 0%; }
         }
 
-        .circles {
+        /* Update: Gelembung Air (Bubbles) */
+        .bubbles {
             position: absolute;
             top: 0;
             left: 0;
@@ -41,31 +44,52 @@
             z-index: 0; 
             pointer-events: none;
         }
-        .circles li {
+        .bubbles li {
             position: absolute;
             display: block;
             list-style: none;
             width: 20px;
             height: 20px;
             background: rgba(255, 255, 255, 0.15);
-            animation: animate-circles 25s linear infinite;
+            /* Efek Gelembung */
+            box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: animate-bubbles 25s linear infinite;
             bottom: -150px;
-            border-radius: 20%; 
+            border-radius: 50%; /* Bulat Sempurna */
         }
-        .circles li:nth-child(1){ left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
-        .circles li:nth-child(2){ left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
-        .circles li:nth-child(3){ left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
-        .circles li:nth-child(4){ left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
-        .circles li:nth-child(5){ left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
-        .circles li:nth-child(6){ left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
-        .circles li:nth-child(7){ left: 35%; width: 150px; height: 150px; animation-delay: 7s; }
-        .circles li:nth-child(8){ left: 50%; width: 25px; height: 25px; animation-delay: 15s; animation-duration: 45s; }
-        .circles li:nth-child(9){ left: 20%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 35s; }
-        .circles li:nth-child(10){ left: 85%; width: 150px; height: 150px; animation-delay: 0s; animation-duration: 11s; }
+        .bubbles li:nth-child(1){ left: 25%; width: 40px; height: 40px; animation-duration: 12s; animation-delay: 0s; }
+        .bubbles li:nth-child(2){ left: 10%; width: 20px; height: 20px; animation-duration: 10s; animation-delay: 2s; }
+        .bubbles li:nth-child(3){ left: 70%; width: 20px; height: 20px; animation-duration: 14s; animation-delay: 4s; }
+        .bubbles li:nth-child(4){ left: 40%; width: 35px; height: 35px; animation-duration: 18s; animation-delay: 0s; }
+        .bubbles li:nth-child(5){ left: 65%; width: 20px; height: 20px; animation-duration: 11s; animation-delay: 0s; }
+        .bubbles li:nth-child(6){ left: 75%; width: 50px; height: 50px; animation-duration: 15s; animation-delay: 3s; }
+        .bubbles li:nth-child(7){ left: 35%; width: 60px; height: 60px; animation-duration: 20s; animation-delay: 7s; }
+        .bubbles li:nth-child(8){ left: 50%; width: 25px; height: 25px; animation-duration: 13s; animation-delay: 1s; }
+        .bubbles li:nth-child(9){ left: 20%; width: 15px; height: 15px; animation-duration: 9s; animation-delay: 2s; }
+        .bubbles li:nth-child(10){ left: 85%; width: 70px; height: 70px; animation-duration: 22s; animation-delay: 0s; }
+        
+        /* Tambahan gelembung kecil */
+        .bubbles li:nth-child(11){ left: 15%; width: 10px; height: 10px; animation-duration: 8s; animation-delay: 5s; }
+        .bubbles li:nth-child(12){ left: 90%; width: 12px; height: 12px; animation-duration: 9s; animation-delay: 3s; }
 
-        @keyframes animate-circles {
-            0%{ transform: translateY(0) rotate(0deg); opacity: 0.8; border-radius: 10%; }
-            100%{ transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; }
+        @keyframes animate-bubbles {
+            0%{ 
+                transform: translateY(0) scale(0.8); 
+                opacity: 0; 
+                margin-left: 0;
+            }
+            10% {
+                opacity: 0.7;
+            }
+            50% {
+                margin-left: 10px; /* Sedikit bergoyang */
+            }
+            100%{ 
+                transform: translateY(-1200px) scale(1.2); 
+                opacity: 0; 
+                margin-left: -10px;
+            }
         }
 
         @keyframes breathe {
@@ -114,15 +138,22 @@
             flex-wrap: wrap;
             justify-content: center;
             align-content: flex-start;
-            align-items: center; /* Menjaga item tetap sejajar secara vertikal */
-            gap: 10px;
-            padding: 20px 10px;
+            align-items: flex-start; /* Align items at top so boxes line up */
+            gap: 12px;
+            /* POSISI TENGAH IDEAL:
+               - Top 60px: Turun sedikit agar aman dari Toast di atas.
+               - Bottom 140px: Naik cukup tinggi agar aman dari Komentar Netizen di bawah.
+               - Left 56px: Geser kanan agar aman dari Toast Gift/Join di kiri.
+            */
+            padding: 60px 10px 140px 56px !important;
         }
         .mode-sambung .word-item {
             width: auto !important;
             flex-grow: 0 !important;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* Stack box vertically with name */
+            align-items: center;
+            justify-content: flex-start;
         }
 
         /* Class baru untuk kotak Sambung Kata yang rapi */
@@ -131,12 +162,13 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 65px;
-            height: 60px; /* Tinggi tetap agar sejajar */
-            padding: 2px 8px; /* Padding disesuaikan agar konten tidak sesak */
-            border-radius: 12px;
+            min-width: 34px; /* Lebar minimal lebih kecil pas huruf */
+            height: 38px;    /* TINGGI DIPERKECIL (Tight Fit) - Agar tidak terlihat besar */
+            padding: 0 8px;  /* Padding kiri kanan secukupnya */
+            border-radius: 8px; /* Radius disesuaikan dengan tinggi baru */
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
+            box-sizing: border-box; /* Border masuk dalam hitungan tinggi */
         }
 
         .font-bangers { font-family: 'Bangers', cursive; letter-spacing: 1.5px; color: #FFFFFF; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4); }
@@ -182,9 +214,10 @@
 
 <body class="text-slate-900">
 
-    <ul class="circles">
+    <ul class="bubbles">
         <li></li><li></li><li></li><li></li><li></li>
         <li></li><li></li><li></li><li></li><li></li>
+        <li></li><li></li>
     </ul>
 
     <!-- LOGIN -->
@@ -516,20 +549,21 @@
 
             <div class="w-full max-w-md mb-2 relative z-10 flex-shrink-0">
                 <div id="info-ticker-container" class="bg-gradient-to-r from-purple-600 to-indigo-600 border border-purple-400/50 text-white py-1.5 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-opacity duration-500">
-                    <i id="info-ticker-icon" data-lucide="gift" class="w-4 h-4 text-yellow-300 fill-yellow-300"></i>
-                    <span id="info-ticker-text" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-shadow-sm flex items-center gap-1">
-                        1 <img src="https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp" class="w-4 h-4 inline rounded-sm mx-1"> = Buka 1 Huruf!
-                    </span>
-                </div>
+                <i id="info-ticker-icon" data-lucide="gift" class="w-4 h-4 text-yellow-300 fill-yellow-300"></i>
+                <span id="info-ticker-text" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-shadow-sm flex items-center gap-1">
+                    1 <img src="https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp" class="w-4 h-4 inline rounded-sm mx-1"> = Buka 1 Huruf!
+                </span>
             </div>
+        </div>
 
-            <div id="word-list-container" class="w-full max-w-md space-y-3.5 overflow-y-auto pr-2 py-2 mask-image-linear-gradient flex-1 relative z-10">
-                <!-- Slot kata di-generate oleh JS -->
-            </div>
-        </main>
-    </div>
-    
-    <!-- MODAL MENANG -->
+        <!-- Menambahkan pl-14 agar konten bergeser ke tengah/kanan dan tidak tertutup toast di kiri -->
+        <div id="word-list-container" class="w-full max-w-md space-y-3.5 overflow-y-auto pl-14 pr-2 py-2 mask-image-linear-gradient flex-1 relative z-10">
+            <!-- Slot kata di-generate oleh JS -->
+        </div>
+    </main>
+</div>
+
+<!-- MODAL MENANG -->
     <div id="win-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm transition-opacity duration-300">
         <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-5 text-center transform transition-all scale-in max-h-[95vh] flex flex-col">
             <div class="flex-shrink-0">
@@ -727,7 +761,7 @@
         const CUSTOM_LEVEL_DATA_KEY = 'kata-rantai-custom-levels-v1';
         const STORAGE_KEY = 'kata-rantai-save-v1';
 
-        const TIKTOK_SERVERS = ["https://9df1bbf0413b.ngrok-free.app"];
+        const TIKTOK_SERVERS = ["https://ini-live.up.railway.app", "https://buat-lev.up.railway.app"];
         const INDOFINITY_WS_PORT = 62024;
         const INDOFINITY_SOCKETIO_PORT = 62025;
 
@@ -1868,19 +1902,18 @@
             if (!el) return;
             
             // Layout Adjustments based on Mode
-            el.className = currentMode === 'sambung' ? "word-item transition-all duration-300" : "flex items-center gap-2 opacity-90 pop-in w-full mb-2";
+            el.className = currentMode === 'sambung' ? "word-item pop-in" : "flex items-center gap-2 opacity-90 pop-in w-full mb-2";
 
             if (data) {
                 // REVEALED
                 if (currentMode === 'sambung') {
-                    // Sambung Kata: Rapi & Sejajar (Updated Border)
-                    el.className = "word-item pop-in";
+                    // Sambung Kata: Box bersih, nama di bawah
                     el.innerHTML = `
-                        <div class="sambung-box bg-white border-2 border-slate-300 shadow-sm hover:scale-105">
-                            <span class="font-bold text-slate-800 text-lg leading-none mb-0.5">${data.word}</span>
-                            <div class="bg-slate-100 px-2 py-0.5 rounded-full max-w-[60px]">
-                                <span class="text-[9px] text-slate-500 font-bold truncate block">${data.solver.nickname.replace(/</g,"&lt;")}</span>
-                            </div>
+                        <div class="sambung-box bg-white border-2 border-slate-300 shadow-sm hover:border-slate-400">
+                            <span class="font-bold text-slate-800 text-lg leading-none pb-0.5">${data.word}</span>
+                        </div>
+                        <div class="mt-1 max-w-[80px] text-center">
+                            <span class="text-[9px] text-slate-500 font-bold truncate block bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-sm">${data.solver.nickname.replace(/</g,"&lt;")}</span>
                         </div>`;
                 } else {
                     // Kata Berkait: Full detail row
@@ -1904,11 +1937,14 @@
                          if (gameState.currentHints.includes(char) || j < 2) hintText += `<span class="text-amber-800">${char}</span>`;
                          else hintText += `<span class="opacity-30">_</span>`;
                     }
-                    el.className = "word-item pop-in scale-105 z-10";
+                    // Box Aktif
+                    el.className = "word-item pop-in z-10";
                     el.innerHTML = `
                          <div class="sambung-box bg-amber-100 border-2 border-amber-400 shadow-md animate-pulse">
-                            <span class="font-bold text-amber-900 text-lg tracking-widest leading-none">${hintText}</span>
-                            <span class="text-[8px] text-amber-700 font-extrabold uppercase mt-1 tracking-wide">GILIRANMU</span>
+                            <span class="font-bold text-amber-900 text-lg tracking-widest leading-none pb-0.5">${hintText}</span>
+                         </div>
+                         <div class="mt-1">
+                            <span class="text-[8px] text-amber-700 font-extrabold uppercase tracking-wide bg-amber-200 px-2 py-0.5 rounded-full border border-amber-300">GILIRANMU</span>
                          </div>
                     `;
                 } else {
@@ -1942,11 +1978,11 @@
                 // LOCKED
                 if (currentMode === 'sambung') {
                     el.className = "word-item opacity-60";
-                    // Samakan border-2 agar tinggi konsisten
                     el.innerHTML = `
                          <div class="sambung-box bg-slate-200/80 border-2 border-slate-300/50">
-                            <span class="text-slate-400 font-bold text-xl">?</span>
+                            <span class="text-slate-400 font-bold text-xl leading-none pb-0.5">?</span>
                          </div>
+                         <div class="mt-1 h-[17px]"></div>
                     `;
                 } else {
                     el.className = "flex items-center gap-3 opacity-75 w-full mb-2";
