@@ -1,11 +1,10 @@
-﻿1,2,3,4,5,6,7,8,9,10,IMG BG SOAL,1,2,3,4,5,6,7,8,9,10,,
 BUKU,TULIS,TANGAN,KANAN,BELOK,,,,,,bg1.jpg,,Jumlah huruf: 5,Huruf terakhir: N,Jumlah huruf: 5,,,,,,,level1.png,Easy
 MEJA,GURU,MATEMATIKA,SOAL,LATIHAN,,,,,,bg1.jpg,,Jumlah huruf: 4,Huruf terakhir: A,Jumlah huruf: 4,,,,,,,level1.png,Easy
 LAPANGAN,UPACARA,BENDERA,INDONESIA,NEGARA,KEPALA,,,,,bg1.jpg,,Jumlah huruf: 7,Huruf terakhir: A,Huruf terakhir: A,Jumlah huruf: 6,,,,,,level1.png,Easy
 BAJU,SERAGAM,OLAHRAGA,SEPAKBOLA,SEPATU,TALI,,,,,bg1.jpg,,Jumlah huruf: 7,Huruf terakhir: A,Huruf terakhir: A,Jumlah huruf: 6,,,,,,level1.png,Easy
 KANTIN,MAKAN,SIANG,PANAS,KOPI,CANGKIR,TUTUP,,,,bg2.jpg,,Jumlah huruf: 5,Huruf terakhir: G,Huruf terakhir: S,Huruf terakhir: I,Jumlah huruf: 7,,,,,level2.png,Medium
 SEPATU,OLAHRAGA,VOLI,PANTAI,PASIR,GULA,BUBUK,,,,bg2.jpg,,Huruf terakhir: A,Jumlah huruf: 4,Jumlah huruf: 6,Huruf terakhir: R,Huruf terakhir: A,,,,,level2.png,Medium
-JADWAL,PELAJARAN,BAHASA,INGGRIS,KAMUS[*],BACA,KACAMATA,OPTIK,,,bg2.jpg,,Huruf terakhir: N,Jumlah huruf: 6,Jumlah huruf: 7,,Jumlah huruf: 4,Huruf terakhir: A,,,,level2.png,Medium
-JUARA,DUNIA,HEWAN,LAUT,BIRU[*],WARNA,PENSIL,PENGHAPUS,KARET,,bg2.jpg,,Huruf terakhir: A,Jumlah huruf: 5,Jumlah huruf: 4,,Jumlah huruf: 5,,Huruf terakhir: S,,,level2.png,Medium
-BACA CLUE,CERMIN,GUNTING,JEPITAN,SEMPROTAN[*],HANDUK,SISIR,APRON,BEDAK,BACA CLUE,bg_clue.jpg,,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,,level_clue.png,Hard
-KAMAR,MANDI,KEMBANG,DESA,WISATA,ALAM[*],CINTA,SURAT,KOTAK,KUBUS,bg3.jpg,,Huruf terakhir: I,,,,,,,Huruf terakhir: K,,level3.png,Hard
+JADWAL,PELAJARAN,BAHASA,INGGRIS,KAMUS,BACA,KACAMATA,OPTIK,,,bg2.jpg,,Huruf terakhir: N,Jumlah huruf: 6,Jumlah huruf: 7,,Jumlah huruf: 4,Huruf terakhir: A,,,,level2.png,Medium
+JUARA,DUNIA,HEWAN,LAUT,BIRU,WARNA,PENSIL,PENGHAPUS,KARET,,bg2.jpg,,Huruf terakhir: A,Jumlah huruf: 5,Jumlah huruf: 4,,Jumlah huruf: 5,,Huruf terakhir: S,,,level2.png,Medium
+BACA CLUE,CERMIN,GUNTING,JEPITAN,SEMPROTAN,HANDUK,SISIR,APRON,BEDAK,BACA CLUE,bg_clue.jpg,,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,Alat pangkas rambut,,level_clue.png,Hard
+KAMAR,MANDI,KEMBANG,DESA,WISATA,ALAM,CINTA,SURAT,KOTAK,KUBUS,bg3.jpg,,Huruf terakhir: I,,,,,,,Huruf terakhir: K,,level3.png,Hard
